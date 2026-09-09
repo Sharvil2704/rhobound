@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rhobound — know what a patch costs before you ship it</title>
-<meta name="description" content="Rhobound predicts the latency blast radius of a shared image or dependency change across a service fleet, before rollout.">
+<meta name="description" content="Rhobound predicts the latency blast radius and SLO impact of a shared image or dependency change across a service fleet, before rollout.">
 <meta property="og:title" content="Rhobound">
 <meta property="og:description" content="Know what a patch costs before you ship it.">
 <meta property="og:type" content="website">
@@ -17,131 +17,117 @@
     --bg:#E9ECEF; --panel:#FDFDFE; --sunk:#DFE4E9;
     --ink:#10161C; --muted:#5C6874; --faint:#8695A2;
     --rule:#CDD5DC; --rule2:#B8C2CB;
-    --signal:#A8062E; --signal-soft:#F3DDE3;
-    --calm:#1F6E8C;
+    --signal:#A8062E; --calm:#1F6E8C; --ok:#2E7D57;
   }
   html[data-theme="dark"]{
     --bg:#0E1216; --panel:#161C22; --sunk:#11161B;
     --ink:#E2E8ED; --muted:#8E9BA8; --faint:#6B7986;
     --rule:#242E37; --rule2:#33404B;
-    --signal:#FF5470; --signal-soft:#2B1620;
-    --calm:#4FA8C6;
+    --signal:#FF5470; --calm:#4FA8C6; --ok:#4FBF8B;
   }
   *{box-sizing:border-box}
-  html{-webkit-text-size-adjust:100%}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
   body{
     margin:0;background:var(--bg);color:var(--ink);
     font-family:"IBM Plex Sans",system-ui,sans-serif;
-    font-size:17px;line-height:1.62;
-    -webkit-font-smoothing:antialiased;
+    font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased;
     transition:background .25s,color .25s;
   }
   .wrap{max-width:900px;margin:0 auto;padding:0 26px}
   a{color:var(--signal);text-decoration:none;border-bottom:1px solid currentColor}
   a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--signal);outline-offset:3px}
 
-  .top{display:flex;align-items:center;justify-content:space-between;padding:26px 0 0}
+  .top{display:flex;align-items:center;justify-content:space-between;padding:26px 0 0;gap:16px}
   .brand{display:flex;align-items:center;gap:9px}
   .brand svg{display:block;flex:none}
-  .brand b{
-    font-family:"Archivo",sans-serif;font-weight:700;
-    font-size:21px;letter-spacing:-.035em;
-  }
+  .brand b{font-family:"Archivo",sans-serif;font-weight:700;font-size:21px;letter-spacing:-.035em}
   .brand b i{font-style:normal;color:var(--signal)}
-  .tog{
-    background:none;border:1px solid var(--rule2);border-radius:20px;
-    color:var(--muted);cursor:pointer;padding:6px 13px;
-    font:450 13.5px "IBM Plex Sans",sans-serif;
-  }
+  nav{display:flex;gap:18px;align-items:center;font-size:14.5px}
+  nav a{color:var(--muted);border:0}
+  nav a:hover{color:var(--ink)}
+  .tog{background:none;border:1px solid var(--rule2);border-radius:20px;color:var(--muted);
+       cursor:pointer;padding:5px 12px;font:450 13.5px "IBM Plex Sans",sans-serif}
   .tog:hover{color:var(--ink);border-color:var(--ink)}
+  @media(max-width:720px){ nav .hide{display:none} }
 
-  h1{
-    font-family:"Archivo",sans-serif;font-weight:700;
-    font-size:clamp(36px,6.2vw,60px);line-height:1.04;
-    letter-spacing:-.042em;margin:52px 0 20px;max-width:13ch;
-  }
-  .lede{font-size:19px;line-height:1.6;color:var(--muted);max-width:56ch;margin:0}
+  h1{font-family:"Archivo",sans-serif;font-weight:700;font-size:clamp(36px,6.2vw,60px);
+     line-height:1.04;letter-spacing:-.042em;margin:52px 0 20px;max-width:13ch}
+  .lede{font-size:19px;line-height:1.6;color:var(--muted);max-width:58ch;margin:0}
 
-  .sim{
-    margin:44px 0 0;background:var(--panel);
-    border:1px solid var(--rule);border-radius:14px;overflow:hidden;
-  }
+  .sim{margin:42px 0 0;background:var(--panel);border:1px solid var(--rule);border-radius:14px;overflow:hidden}
   .sim-head{padding:22px 24px 0}
   .ctl{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
   .ctl label{font-size:14.5px;color:var(--muted);flex:none}
-  input[type=range]{
-    flex:1;min-width:180px;height:22px;appearance:none;background:none;cursor:pointer;
-  }
+  input[type=range]{flex:1;min-width:170px;height:22px;appearance:none;background:none;cursor:pointer}
   input[type=range]::-webkit-slider-runnable-track{height:3px;background:var(--rule2);border-radius:2px}
   input[type=range]::-moz-range-track{height:3px;background:var(--rule2);border-radius:2px}
-  input[type=range]::-webkit-slider-thumb{
-    appearance:none;width:17px;height:17px;border-radius:50%;
-    background:var(--signal);margin-top:-7px;border:0;
-  }
-  input[type=range]::-moz-range-thumb{
-    width:17px;height:17px;border-radius:50%;background:var(--signal);border:0;
-  }
+  input[type=range]::-webkit-slider-thumb{appearance:none;width:17px;height:17px;border-radius:50%;
+    background:var(--signal);margin-top:-7px;border:0}
+  input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--signal);border:0}
   .rate{font-variant-numeric:tabular-nums;font-weight:500;font-size:15px;min-width:74px;text-align:right}
-
-  .stats{display:flex;gap:34px;flex-wrap:wrap;padding:20px 24px 4px}
+  .stats{display:flex;gap:30px;flex-wrap:wrap;padding:20px 24px 4px}
   .stat span{display:block;font-size:13.5px;color:var(--faint);margin-bottom:1px}
-  .stat strong{
-    font-family:"Archivo",sans-serif;font-weight:600;
-    font-size:27px;letter-spacing:-.025em;font-variant-numeric:tabular-nums;
-  }
+  .stat strong{font-family:"Archivo",sans-serif;font-weight:600;font-size:26px;
+    letter-spacing:-.025em;font-variant-numeric:tabular-nums}
   .stat.key strong{color:var(--signal)}
-  #verdict{font-size:15px;font-weight:500;padding-top:8px}
-
+  #verdict{font-size:15px;font-weight:500;padding-top:8px;min-height:1.6em}
   .chart{padding:6px 12px 0}
   .chart svg{width:100%;height:auto;display:block}
   .gl{stroke:var(--rule);stroke-width:1}
   .ax{font:400 12px "IBM Plex Sans",sans-serif;fill:var(--faint)}
-
   .bars{border-top:1px solid var(--rule);padding:20px 24px 22px;background:var(--sunk)}
-  .bar{display:grid;grid-template-columns:96px 1fr 62px;align-items:center;gap:12px;padding:3px 0}
+  .bar{display:grid;grid-template-columns:96px 1fr 58px 30px;align-items:center;gap:11px;padding:3px 0}
   .bar i{font-style:normal;font-size:14.5px;color:var(--muted);white-space:nowrap}
   .bar i.p{color:var(--ink)}
   .track{height:9px;background:var(--rule);border-radius:5px;overflow:hidden}
   .fill{height:100%;background:var(--signal);border-radius:5px;width:0;transition:width .18s ease-out}
-  .bar u{
-    font-style:normal;text-decoration:none;font-size:14px;text-align:right;
-    font-variant-numeric:tabular-nums;color:var(--ink);
-  }
+  .bar u{font-style:normal;text-decoration:none;font-size:14px;text-align:right;
+    font-variant-numeric:tabular-nums;color:var(--ink)}
+  .bar em{font-style:normal;font-size:12.5px;text-align:right;color:var(--ok)}
+  .bar em.br{color:var(--signal);font-weight:600}
   .legend{font-size:13.5px;color:var(--faint);margin:12px 0 0}
 
-  section{padding:62px 0 0}
-  h2{
-    font-family:"Archivo",sans-serif;font-weight:600;font-size:25px;
-    letter-spacing:-.025em;margin:0 0 16px;
-  }
-  p{max-width:62ch;margin:0 0 17px}
-  .pull{
-    border-left:2px solid var(--signal);padding-left:20px;margin:30px 0;
+  section{padding:66px 0 0}
+  h2{font-family:"Archivo",sans-serif;font-weight:600;font-size:26px;
+     letter-spacing:-.025em;margin:0 0 16px}
+  h3{font-family:"Archivo",sans-serif;font-weight:600;font-size:18px;
+     letter-spacing:-.015em;margin:28px 0 8px}
+  p{max-width:64ch;margin:0 0 17px}
+  .pull{border-left:2px solid var(--signal);padding-left:20px;margin:30px 0;
     font-family:"Archivo",sans-serif;font-weight:500;font-size:21px;
-    line-height:1.42;letter-spacing:-.02em;max-width:46ch;
-  }
+    line-height:1.42;letter-spacing:-.02em;max-width:48ch}
 
-  ol{list-style:none;counter-reset:s;padding:0;margin:4px 0 0;max-width:62ch}
-  ol li{counter-increment:s;position:relative;padding:0 0 20px 42px}
-  ol li::before{
-    content:counter(s);position:absolute;left:0;top:1px;
-    width:25px;height:25px;border-radius:50%;border:1px solid var(--rule2);
-    font:450 13px "IBM Plex Sans",sans-serif;line-height:24px;text-align:center;color:var(--muted);
-  }
+  table{width:100%;border-collapse:collapse;font-size:15.5px;margin:4px 0 12px;
+    font-variant-numeric:tabular-nums}
+  caption{text-align:left;font-size:14.5px;color:var(--muted);padding-bottom:11px}
+  th,td{padding:9px 12px 9px 0;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-weight:600;font-size:13.5px;color:var(--muted);border-bottom-color:var(--rule2)}
+  td.n,th.n{text-align:right;padding-right:0}
+  .src{font-size:13.5px;color:var(--faint);max-width:64ch}
+
+  ol{list-style:none;counter-reset:s;padding:0;margin:4px 0 0;max-width:64ch}
+  ol li{counter-increment:s;position:relative;padding:0 0 22px 42px}
+  ol li::before{content:counter(s);position:absolute;left:0;top:1px;width:25px;height:25px;
+    border-radius:50%;border:1px solid var(--rule2);font:450 13px "IBM Plex Sans",sans-serif;
+    line-height:24px;text-align:center;color:var(--muted)}
   ol b{font-weight:600}
   ol p{margin:1px 0 0;font-size:16px;color:var(--muted)}
+  ol .gate{font-size:14.5px;color:var(--faint);margin-top:5px}
 
-  footer{
-    margin-top:70px;border-top:1px solid var(--rule);
-    padding:24px 0 56px;font-size:15px;color:var(--muted);
-    display:flex;gap:8px 26px;flex-wrap:wrap;
-  }
+  ul.plain{list-style:none;padding:0;margin:0;max-width:64ch}
+  ul.plain li{padding:0 0 14px 0;border-bottom:1px solid var(--rule);margin-bottom:14px}
+  ul.plain li:last-child{border:0}
+  ul.plain b{font-weight:600;display:block}
+  ul.plain span{color:var(--muted);font-size:16px}
+
+  footer{margin-top:74px;border-top:1px solid var(--rule);padding:24px 0 56px;
+    font-size:15px;color:var(--muted);display:flex;gap:8px 26px;flex-wrap:wrap}
   @media(max-width:620px){
     body{font-size:16px}
-    .stats{gap:22px}
-    .stat strong{font-size:23px}
-    .bar{grid-template-columns:84px 1fr 56px;gap:9px}
+    .stats{gap:20px}.stat strong{font-size:22px}
+    .bar{grid-template-columns:78px 1fr 52px 26px;gap:8px}
     .bar i,.bar u{font-size:13.5px}
+    table{font-size:14.5px}
   }
 </style>
 </head>
@@ -156,27 +142,31 @@
     </svg>
     <b>rho<i>bound</i></b>
   </div>
-  <button class="tog" id="tog" aria-label="Switch colour theme">Dark</button>
+  <nav>
+    <a class="hide" href="#cost">The cost</a>
+    <a class="hide" href="#offer">Product</a>
+    <a class="hide" href="#plan">Roadmap</a>
+    <button class="tog" id="tog">Dark</button>
+  </nav>
 </div>
 
 <h1>Know what a patch costs before you ship it.</h1>
-<p class="lede">A CVE fix to a shared base image adds a few milliseconds in a benchmark. Rhobound predicts what those milliseconds become once the image is running across your fleet.</p>
+<p class="lede">A CVE fix to a shared base image adds a few milliseconds in a benchmark. Rhobound predicts what those milliseconds become once the image is running across your fleet — which services slow down, by how much, and which service level objectives break.</p>
 
 <div class="sim">
   <div class="sim-head">
     <div class="ctl">
       <label for="load">Traffic</label>
-      <input type="range" id="load" min="40" max="118" step="0.5" value="55" aria-describedby="verdict">
+      <input type="range" id="load" min="40" max="118" step="0.5" value="55">
       <span class="rate" id="rate">55 rps</span>
     </div>
     <div class="stats">
       <div class="stat key"><span>Added latency at checkout</span><strong id="dl">+13.8 ms</strong></div>
+      <div class="stat"><span>Objectives broken</span><strong id="slo">1 of 8</strong></div>
       <div class="stat"><span>Busiest service load</span><strong id="rho">0.48</strong></div>
-      <div class="stat"><span>Services affected</span><strong id="cnt">8 of 12</strong></div>
     </div>
     <div id="verdict"></div>
   </div>
-
   <div class="chart">
     <svg viewBox="0 0 700 300" role="img" aria-labelledby="ct">
       <title id="ct">Added latency against traffic. The same patch costs about 14 milliseconds at low traffic and rises steeply toward a vertical limit near 114 requests per second.</title>
@@ -205,121 +195,188 @@
       <circle id="dot" r="5" fill="var(--signal)"/>
     </svg>
   </div>
-
   <div class="bars" id="bars"></div>
 </div>
 
-<section>
-  <h2>Blast radius is not a reachability problem</h2>
-  <p>A scanner can tell you which services contain a patched image. That set is not the answer. Two services running the identical image can see a 40&nbsp;ms regression and a 1&nbsp;ms regression, because one sits at 90% utilisation behind a fan-out and the other does not.</p>
+<section id="problem">
+  <h2>Nobody can answer this question today</h2>
+  <p>A security team ships a patched base image. It clears the scanner, the unit tests pass, and the benchmark shows a small regression that looks acceptable. Then it rolls to a thousand pods and the pager goes off in a service nobody thought was involved.</p>
+  <p>The gap is not tooling coverage. It is that the three tools you already own each answer a different question, and none of them answers this one.</p>
+  <table>
+    <caption>What existing tools tell you about a shared-component change</caption>
+    <thead><tr><th>Tool</th><th>Answers</th><th>Cannot answer</th></tr></thead>
+    <tbody>
+      <tr><td>Image scanner</td><td>Which services contain the patched layer</td><td>What it costs any of them</td></tr>
+      <tr><td>Benchmark suite</td><td>The change adds 15 ms in isolation</td><td>What 15 ms becomes under real load</td></tr>
+      <tr><td>Canary analysis</td><td>Whether this one canary looks worse</td><td>What happens to the other 900 services</td></tr>
+      <tr><td>APM dashboard</td><td>That something got slower, afterwards</td><td>Anything before you ship</td></tr>
+    </tbody>
+  </table>
   <div class="pull">The cost of a change is set by where it lands in the queue, not by how many places it lands.</div>
-  <p>Move the slider above and nothing about the patch changes — only the traffic does. Four of the twelve services carry the new image; the rest inherit the damage through call paths and shared dependencies. Checkout never runs the patched image at all.</p>
+  <p>Move the slider above and nothing about the patch changes — only the traffic does. The same 15 ms of added work costs 14 ms at low load and over 120 ms near saturation, because waiting time grows non-linearly with utilisation. Four of the twelve services carry the new image; the rest inherit the damage through call paths and shared dependencies. Checkout never runs the patched image at all.</p>
 </section>
 
-<section>
-  <h2>How it works</h2>
+<section id="cost">
+  <h2>What being wrong costs</h2>
+  <p>Change-induced failure is not an edge case. It is the majority experience of engineering organisations, and the recovery is slow enough that prediction is worth more than detection.</p>
+  <table>
+    <caption>Published benchmarks on change failure, recovery and outage cost</caption>
+    <thead><tr><th>Measure</th><th class="n">Figure</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td>Teams achieving a 0–2% change failure rate</td><td class="n">8.5%</td><td>DORA 2025</td></tr>
+      <tr><td>Teams with change failure rates above 16%</td><td class="n">39.5%</td><td>DORA 2025</td></tr>
+      <tr><td>Teams recovering from a failed deployment in under an hour</td><td class="n">21.3%</td><td>DORA 2025</td></tr>
+      <tr><td>Teams taking a day to a week to recover</td><td class="n">56.5%</td><td>DORA 2025</td></tr>
+      <tr><td>Median duration of a significant outage</td><td class="n">53 min</td><td>Uptime Institute 2025</td></tr>
+      <tr><td>Outages lasting more than four hours</td><td class="n">18%</td><td>Uptime Institute 2025</td></tr>
+      <tr><td>Enterprises losing over $300k per hour of downtime</td><td class="n">91%</td><td>ITIC 2024</td></tr>
+      <tr><td>Enterprises losing $1m–$5m+ per hour</td><td class="n">41%</td><td>ITIC 2024</td></tr>
+      <tr><td>Outages judged detectable before user impact</td><td class="n">76%</td><td>Gartner 2025</td></tr>
+    </tbody>
+  </table>
+  <p class="src">Figures as reported by each source. Downtime cost estimates vary widely by methodology and industry; they are useful as orders of magnitude, not precise numbers.</p>
+
+  <h3>Latency does not need to become downtime to cost money</h3>
+  <p>Most of a patch's damage never shows up as an outage. Amazon's classic experiment found every 100 ms of added latency cost roughly 1% of sales; Google measured a 400 ms delay reducing search volume by 0.74%, and Bing found 500 ms cut revenue per user by 1.2%. Google and Deloitte's later work put a 0.1-second improvement at around 8% more retail conversions.</p>
+  <p>Applied to the simulation above: at 90 requests per second, this patch adds 38 ms at checkout. On the Amazon coefficient that is roughly a 0.38% revenue drag — invisible on every dashboard you own, permanent until somebody thinks to look, and entirely predictable beforehand.</p>
+
+  <h3>The bigger bill is the one you already pay</h3>
+  <p>Because nobody can predict what a change will cost, engineers pad. Resource requests get set for the worst case anyone can imagine, and the padding is never revisited. The result is measurable across tens of thousands of production clusters: average CPU utilisation of 8%, memory at 20%, CPU overprovisioning risen from 40% to 69% in a year. Datadog's own cost research attributes 83% of container spend to idle resources.</p>
+  <div class="pull">Overprovisioning is not carelessness. It is what a team does when it has no model.</div>
+  <p>This reframes the value. Preventing incidents is a counterfactual and hard to invoice for. Reclaiming headroom is not. A team that can predict what utilisation a change will actually produce can run closer to the line on purpose, and the saving appears on next month's bill.</p>
+</section>
+
+<section id="offer">
+  <h2>What we intend to sell</h2>
+  <p>One model, three products, in the order a customer is likely to buy them.</p>
+  <ul class="plain">
+    <li><b>Change impact reports</b><span>Point an agent at a cluster, feed it a candidate image, and get a per-service predicted impact map with bounds and an objective-breach list. Sold per prediction or per seat. This is the wedge: no workflow change, no data leaves the cluster, and the output is checkable against the rollout that follows.</span></li>
+    <li><b>Rollout gating</b><span>The prediction moves into the deployment pipeline. Waves are ordered by predicted damage — least loaded and least connected clusters first — and a wave is halted when realised impact exceeds the predicted bound. Replaces a canary that watches one service with a model that watches the fleet.</span></li>
+    <li><b>Headroom reclamation</b><span>The same calibration that predicts damage also says how much padding a service does not need. Priced against measured savings, which makes the return arithmetic rather than argument.</span></li>
+  </ul>
+  <h3>The asset underneath</h3>
+  <p>A library of profiled base images, sidecars and runtimes — the per-code-path cost of each version, measured in our own lab from public images. It compounds with every image profiled, requires no customer data at all, and is what makes the first prediction for a new customer useful on day one rather than after a quarter of learning.</p>
+</section>
+
+<section id="plan">
+  <h2>How we get there</h2>
+  <p>The model is validated in simulation. Everything below is the work of showing it survives contact with real infrastructure, and each stage has a condition that decides whether the next one is worth starting.</p>
   <ol>
-    <li><b>Measure the change in isolation.</b><p>Differential profiling of the old and new image attributes the regression to specific code paths — TLS handshake, compression, syscall overhead — instead of one aggregate number.</p></li>
-    <li><b>Convert it per service.</b><p>Each service invokes those paths at a different rate. A TLS-terminating gateway inherits most of the cost; a static file server inherits almost none.</p></li>
-    <li><b>Amplify by local queueing.</b><p>A service-time increase raises utilisation, and waiting time grows with it non-linearly. This is the step that separates a harmless patch from an outage.</p></li>
-    <li><b>Propagate through the graph.</b><p>Costs compose along call paths, take the worst case across parallel fan-out, and accumulate at shared dependencies. Retry loops are solved as a fixed point, which is what surfaces changes that cascade rather than settle.</p></li>
+    <li><b>Break the model on purpose</b>
+      <p>Sweep varying cluster sizes, topologies, traffic mixes and utilisation regimes in simulation. Single patch first, then multiple simultaneous patches — which is the honest hard case, because two changes on one service add in service time but compound in waiting time, so patches that are individually safe can be jointly unsafe.</p>
+      <p class="gate">Proceed when the interaction term is characterised and the model states its own error bars by regime.</p></li>
+    <li><b>Calibrate from real telemetry</b>
+      <p>Derive topology, arrival rates, service times and variability from OpenTelemetry and service-mesh data on live clusters. This is where the assumptions that hold in simulation meet merged arrival flows, colocation and autoscaling.</p>
+      <p class="gate">Proceed when predictions on an unseen cluster land inside the stated bounds at least nine times in ten.</p></li>
+    <li><b>Validate by intervention</b>
+      <p>Inject known delays with chaos tooling and check the predicted downstream effect against the measured one. Every injection is a controlled experiment of exactly the kind the model claims to answer, which makes the accuracy record auditable rather than asserted.</p>
+      <p class="gate">Proceed when injected-delay predictions hold across at least three distinct production architectures.</p></li>
+    <li><b>Collect only what the model needs</b>
+      <p>The model consumes moments and a graph, not requests: arrival rates, service times, variability, call multiplicities, code-path usage. All of it computes at the edge. The dependency graph — the genuinely sensitive artefact, since it reveals architecture and organisation — never leaves the customer. The prediction runs where the data already is.</p>
+      <p class="gate">Proceed when a security review passes with no request payloads and no topology in transit.</p></li>
+    <li><b>Gate the rollout</b>
+      <p>Move from report to decision: predicted impact ordering rollout waves, and realised impact checked against predicted bounds at each wave. The product only earns this position once the accuracy record from the previous stages justifies it.</p>
+      <p class="gate">Proceed when a customer lets the model order a production rollout unattended.</p></li>
   </ol>
 </section>
 
-<section>
+<section id="research">
+  <h2>What we want to contribute</h2>
+  <p>Predictive performance engineering is well studied in pieces and barely studied as a whole. Causal analysis explains regressions after the fact. Learned models predict latency without explaining it. Queueing theory explains and bounds but assumes a stability that production does not have. Nothing joins them to answer the question a release engineer actually asks.</p>
+  <ul class="plain">
+    <li><b>Forward intervention instead of backward attribution</b><span>Existing causal work identifies which service caused an incident. We want to predict what a proposed change will do, with bounds, before it happens — the same formalism pointed in the opposite direction.</span></li>
+    <li><b>Shared components as the unit of change</b><span>Published work models one service's own change. A base image lands on hundreds of services at once, and simultaneous perturbation of many leaves behaves differently from one perturbation repeated.</span></li>
+    <li><b>Interaction of concurrent changes</b><span>Real fleets have several changes in flight. Whether their effects compound, and how strongly, appears to be unstudied and is directly testable.</span></li>
+    <li><b>Feedback regimes</b><span>Retries and timeouts make the propagation graph cyclic and the outcome bimodal. Predicting proximity to that boundary matters more than predicting a mean, and it is where every feedforward model fails.</span></li>
+    <li><b>Prediction under privacy constraints</b><span>How accurate can a performance model be when it never sees a request, a service name, or a topology? We think the answer is: nearly as accurate, because the model needs moments rather than data.</span></li>
+  </ul>
+  <p style="margin-top:20px">Where results are publishable and not commercially load-bearing, we intend to publish them.</p>
+</section>
+
+<section id="delta">
+  <h2>From no insight to measurable insight</h2>
+  <table>
+    <caption>The same rollout, before and after</caption>
+    <thead><tr><th>Question</th><th>Today</th><th>With a calibrated model</th></tr></thead>
+    <tbody>
+      <tr><td>Which services are affected?</td><td>Which contain the image</td><td>Which will measurably slow, including ones that never ran it</td></tr>
+      <tr><td>By how much?</td><td>Unknown until deployed</td><td>Per service, with an upper bound</td></tr>
+      <tr><td>Will an objective break?</td><td>Found out by alert</td><td>Named beforehand, with the load at which it happens</td></tr>
+      <tr><td>Is it safe at peak?</td><td>Inferred from off-peak canary</td><td>Evaluated at the utilisation that matters</td></tr>
+      <tr><td>Can it cascade?</td><td>No answer exists</td><td>Flagged when the system is near a feedback boundary</td></tr>
+      <tr><td>What order should we roll?</td><td>Convention or alphabetical</td><td>Least predicted damage first</td></tr>
+      <tr><td>How much headroom do we need?</td><td>Padded to worst imaginable</td><td>Padded to worst predicted</td></tr>
+      <tr><td>Did this change cause the regression?</td><td>Argued in a postmortem</td><td>Tested against a prediction made in advance</td></tr>
+    </tbody>
+  </table>
+  <p>None of these become certainties. They become numbers with error bars, which is the difference between an argument and a decision.</p>
+</section>
+
+<section id="status">
   <h2>Where it is today</h2>
-  <p>The model is built and validated against discrete-event simulation. It identifies the affected set exactly, predicts impact within roughly 5% up to 93% utilisation, and proves saturation cases arithmetically rather than statistically. Against a model that ignores queueing it is seven times more accurate at normal load and twenty times more accurate near saturation.</p>
-  <p>Next is calibration against live telemetry — OpenTelemetry traces for topology, arrival rates and service times — and validation against injected latency in real clusters.</p>
+  <p>The propagation model is built and validated against discrete-event simulation. It identifies the affected set exactly, predicts impact within roughly 5% up to 93% utilisation, and proves saturation cases arithmetically rather than statistically. Against a model that ignores queueing it is seven times more accurate at normal load and twenty times more accurate near saturation. The retry-feedback boundary is detected but currently optimistic, so it is reported with a margin.</p>
+  <p>We are looking for design partners running Kubernetes at a scale where a shared image touches more services than one team can reason about.</p>
 </section>
 
 <footer>
   <span>Rhobound</span>
-  <span><a href="mailto:sam@rhobound.com">sam@rhobound.com</a></span>
+  <span><a href="mailto:hello@rhobound.com">hello@rhobound.com</a></span>
 </footer>
 
 </div>
 
 <script>
 (function(){
-  var root=document.documentElement, tog=document.getElementById('tog');
-  function set(t){
-    root.setAttribute('data-theme',t);
-    tog.textContent = t==='dark' ? 'Light' : 'Dark';
-    try{ localStorage.setItem('rb-theme',t); }catch(e){}
-  }
-  var saved=null;
-  try{ saved=localStorage.getItem('rb-theme'); }catch(e){}
-  set(saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'));
-  tog.onclick=function(){ set(root.getAttribute('data-theme')==='dark'?'light':'dark'); };
+  var root=document.documentElement,tog=document.getElementById('tog');
+  function set(t){root.setAttribute('data-theme',t);tog.textContent=t==='dark'?'Light':'Dark';
+    try{localStorage.setItem('rb-theme',t);}catch(e){}}
+  var sv=null;try{sv=localStorage.getItem('rb-theme');}catch(e){}
+  set(sv||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+  tog.onclick=function(){set(root.getAttribute('data-theme')==='dark'?'light':'dark');};
 
-  var S=[
-    {n:'ingress',    s:2.0, c:[1,2]},
-    {n:'auth',       s:5.0, c:[7]},
-    {n:'catalog',    s:3.0, c:[3,4,5], par:true},
-    {n:'shard-a',    s:6.0, c:[8]},
-    {n:'shard-b',    s:6.0, c:[8]},
-    {n:'shard-c',    s:6.0, c:[9]},
-    {n:'checkout',   s:4.0, c:[10,11]},
-    {n:'token-cache',s:2.5, c:[]},
-    {n:'db-proxy',   s:4.5, c:[]},
-    {n:'db-proxy2',  s:4.5, c:[]},
-    {n:'payments',   s:7.0, c:[7]},
-    {n:'ledger',     s:5.5, c:[]}
-  ];
-  var DS=[0,3.5,0,1.75,0,0,0,0,1.0,0,5.0,0];
-  var ENTRY={0:0.8,6:0.2};
+  var S=[{n:'ingress',s:2.0,c:[1,2]},{n:'auth',s:5.0,c:[7]},{n:'catalog',s:3.0,c:[3,4,5],par:true},
+   {n:'shard-a',s:6.0,c:[8]},{n:'shard-b',s:6.0,c:[8]},{n:'shard-c',s:6.0,c:[9]},
+   {n:'checkout',s:4.0,c:[10,11]},{n:'token-cache',s:2.5,c:[]},{n:'db-proxy',s:4.5,c:[]},
+   {n:'db-proxy2',s:4.5,c:[]},{n:'payments',s:7.0,c:[7]},{n:'ledger',s:5.5,c:[]}];
+  var DS=[0,3.5,0,1.75,0,0,0,0,1.0,0,5.0,0],ENTRY={0:0.8,6:0.2};
+  var SLO={0:65,1:15,2:45,3:25,4:25,10:20,8:15,6:30};
+  var ORD=[0,1,2,3,4,10,8,6],PATCHED={1:1,3:1,8:1,10:1};
 
   var V=new Array(12).fill(0);
-  (function(){
-    function add(i,w){ V[i]+=w; S[i].c.forEach(function(k){ add(k,w); }); }
-    for(var r in ENTRY) add(+r, ENTRY[r]);
-  })();
+  (function(){function a(i,w){V[i]+=w;S[i].c.forEach(function(k){a(k,w);});}
+   for(var r in ENTRY)a(+r,ENTRY[r]);})();
 
-  function emax(m){
-    var n=m.length,tot=0;
-    for(var k=1;k<(1<<n);k++){
-      var sum=0,bits=0;
-      for(var j=0;j<n;j++) if(k&(1<<j)){ sum+=1/m[j]; bits++; }
-      tot += (bits%2?1:-1)/sum;
-    }
-    return tot;
-  }
+  function emax(m){var n=m.length,t=0;
+    for(var k=1;k<(1<<n);k++){var s=0,b=0;
+      for(var j=0;j<n;j++)if(k&(1<<j)){s+=1/m[j];b++;}
+      t+=(b%2?1:-1)/s;}
+    return t;}
 
-  function solve(lam,patched){
-    var s=S.map(function(v,i){ return v.s + (patched?DS[i]:0); });
-    var rho=s.map(function(si,i){ return lam*V[i]*si; });
-    var maxr=Math.max.apply(null,rho);
-    if(maxr>=1) return {bad:true,rho:maxr};
-    var R=s.map(function(si,i){ return si/(1-rho[i]); });
-    var L=new Array(12).fill(-1);
-    function sub(i){
-      if(L[i]>=0) return L[i];
-      var kids=S[i].c;
-      if(!kids.length) L[i]=R[i];
-      else if(S[i].par) L[i]=R[i]+emax(kids.map(sub));
-      else L[i]=R[i]+kids.reduce(function(a,k){ return a+sub(k); },0);
-      return L[i];
-    }
-    for(var i=0;i<12;i++) sub(i);
-    return {bad:false,L:L,rho:maxr};
-  }
+  function solve(lam,p){
+    var s=S.map(function(v,i){return v.s+(p?DS[i]:0);});
+    var rho=s.map(function(si,i){return lam*V[i]*si;});
+    var mx=Math.max.apply(null,rho);
+    if(mx>=1)return{bad:true,rho:mx};
+    var R=s.map(function(si,i){return si/(1-rho[i]);}),L=new Array(12).fill(-1);
+    function sub(i){if(L[i]>=0)return L[i];var k=S[i].c;
+      if(!k.length)L[i]=R[i];
+      else if(S[i].par)L[i]=R[i]+emax(k.map(sub));
+      else L[i]=R[i]+k.reduce(function(a,x){return a+sub(x);},0);
+      return L[i];}
+    for(var i=0;i<12;i++)sub(i);
+    return{bad:false,L:L,rho:mx};}
 
-  function delta(rps){
-    var lam=rps/1000, a=solve(lam,false), b=solve(lam,true);
-    if(a.bad||b.bad) return {bad:true,rho:b.rho};
-    return {bad:false,rho:b.rho,d:b.L.map(function(v,i){ return v-a.L[i]; })};
-  }
+  function st(rps){var lam=rps/1000,a=solve(lam,false),b=solve(lam,true);
+    if(a.bad||b.bad)return{bad:true,rho:b.rho};
+    return{bad:false,rho:b.rho,L:b.L,d:b.L.map(function(v,i){return v-a.L[i];})};}
 
-  var BREACH=(function(){ var x=40; while(x<118 && !delta(x).bad) x+=0.1; return x; })();
-  var X=function(r){ return 64+(r-40)/78*596; };
-  var Y=function(m){ return 268-Math.min(m,200)/200*232; };
+  var BREACH=(function(){var x=40;while(x<118&&!st(x).bad)x+=0.1;return x;})();
+  var X=function(r){return 64+(r-40)/78*596;},
+      Y=function(m){return 268-Math.min(m,200)/200*232;};
 
   var pts=[];
-  for(var r=40;r<BREACH-0.15;r+=0.4){
-    var v=delta(r); if(v.bad) break;
-    pts.push(X(r).toFixed(1)+','+Y(v.d[0]).toFixed(1));
-    if(v.d[0]>200) break;
-  }
+  for(var r=40;r<BREACH-0.15;r+=0.4){var v=st(r);if(v.bad)break;
+    pts.push(X(r).toFixed(1)+','+Y(v.d[0]).toFixed(1));if(v.d[0]>200)break;}
   var path=document.getElementById('curve');
   path.setAttribute('d','M'+pts.join(' L'));
   document.getElementById('asym').setAttribute('x1',X(BREACH).toFixed(1));
@@ -327,60 +384,55 @@
 
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
     var len=path.getTotalLength();
-    path.style.strokeDasharray=len; path.style.strokeDashoffset=len;
+    path.style.strokeDasharray=len;path.style.strokeDashoffset=len;
     path.animate([{strokeDashoffset:len},{strokeDashoffset:0}],
-      {duration:1400,delay:250,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'});
-  }
+      {duration:1400,delay:250,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'});}
 
-  var NAMES=[0,1,2,3,4,10,8,6].map(function(i){ return i; });
-  var PATCHED={1:1,3:1,8:1,10:1};
   var box=document.getElementById('bars');
-  NAMES.forEach(function(i){
-    var d=document.createElement('div'); d.className='bar';
+  ORD.forEach(function(i){var d=document.createElement('div');d.className='bar';
     d.innerHTML='<i class="'+(PATCHED[i]?'p':'')+'">'+S[i].n+'</i>'+
-      '<div class="track"><div class="fill" id="f'+i+'"></div></div><u id="v'+i+'"></u>';
-    box.appendChild(d);
-  });
-  var lg=document.createElement('p'); lg.className='legend';
-  lg.textContent='Darker names run the patched image. The rest are damaged by propagation. Four further services are predicted unaffected and measure zero.';
+      '<div class="track"><div class="fill" id="f'+i+'"></div></div>'+
+      '<u id="v'+i+'"></u><em id="s'+i+'"></em>';
+    box.appendChild(d);});
+  var lg=document.createElement('p');lg.className='legend';
+  lg.textContent='Darker names run the patched image; the rest are damaged by propagation. The last column marks whether that service is still inside its latency objective.';
   box.appendChild(lg);
 
   var sl=document.getElementById('load');
   function render(){
-    var r=+sl.value, v=delta(r);
+    var r=+sl.value,v=st(r);
     document.getElementById('rate').textContent=r.toFixed(0)+' rps';
-    var dot=document.getElementById('dot'), gd=document.getElementById('guide');
-    gd.setAttribute('x1',X(r)); gd.setAttribute('x2',X(r));
+    var dot=document.getElementById('dot'),gd=document.getElementById('guide');
+    gd.setAttribute('x1',X(r));gd.setAttribute('x2',X(r));
 
     if(v.bad){
       document.getElementById('dl').textContent='unbounded';
+      document.getElementById('slo').textContent='all 8';
       document.getElementById('rho').textContent='≥ 1.00';
-      document.getElementById('cnt').textContent='all 12';
-      document.getElementById('verdict').innerHTML='<span style="color:var(--signal)">Certified breach. The patch pushes a queue past saturation, so latency grows without limit — no statistics needed.</span>';
-      dot.setAttribute('cx',X(r)); dot.setAttribute('cy',36);
-      NAMES.forEach(function(i){
+      document.getElementById('verdict').innerHTML='<span style="color:var(--signal)">Certified breach. The patch pushes a queue past saturation, so latency grows without limit — proved by arithmetic, not statistics.</span>';
+      dot.setAttribute('cx',X(r));dot.setAttribute('cy',36);
+      ORD.forEach(function(i){
         document.getElementById('f'+i).style.width='100%';
         document.getElementById('v'+i).textContent='∞';
-      });
-      return;
-    }
+        var e=document.getElementById('s'+i);e.textContent='✕';e.className='br';});
+      return;}
 
-    var d=v.d, hi=Math.max.apply(null,NAMES.map(function(i){ return d[i]; }));
+    var d=v.d,hi=Math.max.apply(null,ORD.map(function(i){return d[i];}));
+    var brk=ORD.filter(function(i){return v.L[i]>SLO[i];}).length;
     document.getElementById('dl').textContent='+'+d[0].toFixed(1)+' ms';
+    document.getElementById('slo').textContent=brk+' of 8';
     document.getElementById('rho').textContent=v.rho.toFixed(2);
-    document.getElementById('cnt').textContent=d.filter(function(x){ return x>0.05; }).length+' of 12';
-    dot.setAttribute('cx',X(r)); dot.setAttribute('cy',Y(d[0]));
+    dot.setAttribute('cx',X(r));dot.setAttribute('cy',Y(d[0]));
+    document.getElementById('verdict').textContent =
+      v.rho<0.7 ? 'Comfortable. The patch costs roughly what the benchmark suggested.'
+    : v.rho<0.85? 'Amplifying. Queueing is now multiplying the original slowdown.'
+    : 'Close to saturation. A small further increase produces a large one.';
 
-    var msg = v.rho<0.7 ? 'Comfortable. The patch costs roughly what the benchmark suggested.'
-            : v.rho<0.85 ? 'Amplifying. Queueing is now multiplying the original slowdown.'
-            : 'Close to saturation. A small further increase produces a large one.';
-    document.getElementById('verdict').textContent=msg;
-
-    NAMES.forEach(function(i){
+    ORD.forEach(function(i){
       document.getElementById('f'+i).style.width=(d[i]/hi*100).toFixed(1)+'%';
       document.getElementById('v'+i).textContent='+'+d[i].toFixed(1);
-    });
-  }
+      var e=document.getElementById('s'+i),ok=v.L[i]<=SLO[i];
+      e.textContent=ok?'✓':'✕';e.className=ok?'':'br';});}
   sl.addEventListener('input',render);
   render();
 })();
