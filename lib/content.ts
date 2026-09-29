@@ -37,6 +37,33 @@ export const velocityFacts: Fact[] = [
   },
 ];
 
+export const agentFacts: Fact[] = [
+  {
+    figure: "1M+",
+    text: "Pull requests created by GitHub’s Copilot coding agent in its first five months, May to September 2025.",
+    source: "GitHub Octoverse 2025",
+    href: "https://github.blog/news-insights/octoverse/octoverse-a-new-developer-joins-github-every-second-as-ai-leads-typescript-to-1/",
+  },
+  {
+    figure: "~7 months",
+    text: "Doubling time, over six years, of the length of task AI agents can complete on their own at 50% reliability.",
+    source: "METR",
+    href: "https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/",
+  },
+  {
+    figure: "84%",
+    text: "Developers using or planning to use AI tools in their development process, up from 76% a year earlier.",
+    source: "Stack Overflow Developer Survey 2025",
+    href: "https://survey.stackoverflow.co/2025/ai",
+  },
+  {
+    figure: "3.12×",
+    text: "Average execution time of GPT-4’s code relative to expert human solutions on 1,000 efficiency-critical coding problems. Correct is not the same as fast.",
+    source: "EffiBench, NeurIPS 2024",
+    href: "https://arxiv.org/abs/2402.02037",
+  },
+];
+
 export const costFacts: Fact[] = [
   {
     figure: "$300k+",

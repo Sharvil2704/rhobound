@@ -65,8 +65,8 @@ function expectedMax(means: number[]) {
 
 type Solved = { saturated: true; rho: number } | { saturated: false; rho: number; latency: number[] };
 
-function solve(lambdaPerMs: number, patched: boolean): Solved {
-  const s = SERVICES.map((v, i) => v.serviceMs + (patched ? PATCH_MS[i] : 0));
+function solve(lambdaPerMs: number, scale: number): Solved {
+  const s = SERVICES.map((v, i) => v.serviceMs + scale * PATCH_MS[i]);
   const rho = s.map((si, i) => lambdaPerMs * VISITS[i] * si);
   const maxRho = Math.max(...rho);
   if (maxRho >= 1) return { saturated: true, rho: maxRho };
@@ -89,10 +89,11 @@ export type Prediction =
   | { saturated: true; rho: number }
   | { saturated: false; rho: number; latency: number[]; delta: number[] };
 
-export function predict(rps: number): Prediction {
+// scale multiplies the reference patch: 1 is the 6.25 ms patch, 0.5 a patch half as costly.
+export function predict(rps: number, scale = 1): Prediction {
   const lambda = rps / 1000;
-  const before = solve(lambda, false);
-  const after = solve(lambda, true);
+  const before = solve(lambda, 0);
+  const after = solve(lambda, scale);
   if (before.saturated || after.saturated) return { saturated: true, rho: after.rho };
   return {
     saturated: false,
@@ -102,11 +103,27 @@ export function predict(rps: number): Prediction {
   };
 }
 
-function saturationPoint(patched: boolean) {
-  let x = RPS_MIN;
-  while (x < 200 && !solve(x / 1000, patched).saturated) x += 0.1;
+export function saturationPoint(scale: number) {
+  let x = 20;
+  while (x < 200 && !solve(x / 1000, scale).saturated) x += 0.1;
   return x;
 }
 
-export const SATURATION_BEFORE = saturationPoint(false);
-export const SATURATION_AFTER = saturationPoint(true);
+export const SATURATION_BEFORE = saturationPoint(0);
+export const SATURATION_AFTER = saturationPoint(1);
+
+export function slosBroken(p: Prediction) {
+  return p.saturated ? SHOWN.length : SHOWN.filter((i) => p.latency[i] > SLO_MS[i]).length;
+}
+
+// Largest patch scale that keeps every objective at this traffic: the latency budget.
+export function budgetScale(rps: number) {
+  let lo = 0;
+  let hi = 10;
+  for (let n = 0; n < 40; n++) {
+    const mid = (lo + hi) / 2;
+    if (slosBroken(predict(rps, mid)) === 0) lo = mid;
+    else hi = mid;
+  }
+  return lo;
+}

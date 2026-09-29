@@ -53,7 +53,7 @@ export default function Simulator() {
   const broken = p.saturated ? SHOWN.length : SHOWN.filter((i) => p.latency[i] > SLO_MS[i]).length;
 
   return (
-    <figure className="sim" aria-label="Interactive: the same patch at different traffic levels">
+    <figure className="sim reveal" aria-label="Interactive: the same patch at different traffic levels">
       <div className="sim-head">
         <div className="sim-ctl">
           <label htmlFor={inputId}>Traffic</label>

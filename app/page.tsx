@@ -1,8 +1,12 @@
+import DeliveryLoop from "@/components/DeliveryLoop";
+import RevealObserver from "@/components/RevealObserver";
+import RhoBound from "@/components/RhoBound";
 import Simulator from "@/components/Simulator";
 import ThemeToggle from "@/components/ThemeToggle";
 import { primaryCta, site } from "@/site.config";
 import {
   STATUS_LABEL,
+  agentFacts,
   amplification,
   costFacts,
   faqs,
@@ -53,6 +57,7 @@ function Facts({ facts }: { facts: Fact[] }) {
 
 const ext = { target: "_blank", rel: "noopener noreferrer" } as const;
 
+
 export default function Home() {
   return (
     <>
@@ -67,6 +72,9 @@ export default function Home() {
         <nav aria-label="Primary">
           <a href="#problem" className="hide-sm">
             Problem
+          </a>
+          <a href="#why-now" className="hide-sm">
+            Agents
           </a>
           <a href="#how" className="hide-sm">
             How it works
@@ -86,8 +94,9 @@ export default function Home() {
 
       <main id="main">
         <section className="hero wrap">
+          <div className="hero-grid">
           <h1>
-            Know what a security patch costs your latency <span className="nowrap">before you ship it.</span>
+            Know what a security patch costs your latency before you ship it.
           </h1>
           <div className="hero-sub">
             <p className="lede">
@@ -103,6 +112,8 @@ export default function Home() {
                 See the evidence
               </a>
             </div>
+          </div>
+          <RhoBound />
           </div>
           <p className="hero-hint">Drag the traffic slider. The patch stays the same; only the load changes.</p>
           <Simulator />
@@ -133,7 +144,7 @@ export default function Home() {
                 It also slows services the patch never touched, because they wait on the ones it did.
               </p>
             </div>
-            <ol className="amp-scale" aria-label="Amplification factor by utilization">
+            <ol className="amp-scale reveal" aria-label="Amplification factor by utilization">
               {[
                 ["50%", "×4"],
                 ["70%", "×11"],
@@ -173,6 +184,32 @@ export default function Home() {
           </p>
         </section>
 
+        <section id="why-now" className="band wrap">
+          <div className="split">
+            <div>
+              <h2>Agents now write code faster than anyone can performance-test it</h2>
+              <p>
+                Coding agents are moving from autocomplete to opening pull requests on their own, and the tasks they can
+                finish are getting longer every few months. Every one of those changes, security fixes included, reaches
+                production through the same shared images and the same busy services.
+              </p>
+              <p>
+                Tests tell an agent whether its code is correct. Nothing tells it what the code costs at production load, and
+                correct is not the same as fast. A human load-test cycle per change cannot keep up with machine-speed
+                changes.
+              </p>
+              <p className="pull pull-tight">
+                When code is written at machine speed, testing and performance limits have to be checked at machine speed
+                too.
+              </p>
+              <p>
+                <a href="#agents">See how Rhobound fits inside the agent loop</a>
+              </p>
+            </div>
+            <Facts facts={agentFacts} />
+          </div>
+        </section>
+
         <section id="cost" className="band wrap">
           <div className="split">
             <div>
@@ -195,13 +232,43 @@ export default function Home() {
           </div>
         </section>
 
+        <section id="agents" className="band wrap">
+          <h2>The delivery loop agents need: fast, with a hard limit in it</h2>
+          <div className="loop-intro">
+            <p className="intro">
+              In an agentic workflow, the agent writes the change, opens the pull request and waits for checks. Tests
+              catch wrong code. Rhobound is the check that catches slow code: it predicts what the change does to latency
+              at your peak traffic and answers in milliseconds, so it fits inside the loop instead of after it.
+            </p>
+            <ul className="loop-why">
+              <li>
+                <b>Volume.</b> Agents open changes around the clock. A human performance review per change does not scale.
+              </li>
+              <li>
+                <b>Correct is not fast.</b> Tests go green on code that slows a busy service, and queueing multiplies that
+                slowdown only at production load.
+              </li>
+              <li>
+                <b>A limit, not an opinion.</b> The agent gets a verdict, a budget in milliseconds to optimize against, and
+                a certified breach when a change pushes a service past saturation. That last one is arithmetic, not a
+                forecast.
+              </li>
+            </ul>
+          </div>
+          <DeliveryLoop />
+          <p className="loop-note">
+            <Badge status="available" /> The verdicts above are computed live by the queueing model on the 12-service
+            reference system at a 70 req/s peak. <Badge status="roadmap" /> Running it as a CI check and an MCP tool that agents call.
+          </p>
+        </section>
+
         <section id="how" className="band wrap">
           <h2>How it works</h2>
           <p className="intro">
             Rhobound sits between “the fix builds” and “the fix is rolled out”. It needs a small A/B benchmark of the changed
             code, not a full load test, and it builds its model from telemetry you already collect.
           </p>
-          <ol className="steps">
+          <ol className="steps reveal">
             {steps.map((s) => (
               <li key={s.title}>
                 <h3>{s.title}</h3>
@@ -227,6 +294,11 @@ export default function Home() {
           <h3 className="table-title" id="fit">
             Where it fits in your pipeline
           </h3>
+          <div className="pipe reveal">
+            <span className="pipe-token" aria-hidden="true">
+              <span className="pipe-token-in">fixed image</span>
+              <span className="pipe-token-ok">✓ within budget</span>
+            </span>
           <ol className="pipeline" aria-label="Delivery pipeline">
             <li>
               <b>Scanners</b>
@@ -253,6 +325,7 @@ export default function Home() {
               <span>Prometheus, OpenTelemetry</span>
             </li>
           </ol>
+          </div>
           <p className="pipeline-note">
             The scanner says a service is vulnerable. CI says the fix builds. Rhobound says whether the fix is safe to roll
             out, and how much slowdown you can afford. Observability feeds its telemetry back into the model.
@@ -309,53 +382,6 @@ saturation: 139.3 rps before, 114.1 rps after (-18.1% headroom)`}</code>
               <b>Every input has a source.</b> Each field of the recovered architecture records where it came from.
             </li>
           </ul>
-        </section>
-
-        <section id="agents" className="band wrap">
-          <div className="split">
-            <div>
-              <div className="h-row">
-                <h2>A performance check inside the agent loop</h2>
-                <Badge status="roadmap" />
-              </div>
-              <p>
-                Coding agents increasingly write the fixes. They change code faster than any human can performance-test it.
-                Rhobound becomes a tool the agent calls: capture the change, benchmark it, and return a machine-readable
-                verdict before a PR is opened.
-              </p>
-              <ul className="ticks">
-                <li>Predicted latency change with an error band, SLO margin and remaining budget</li>
-                <li>“No significant change” as an explicit answer, so agents stop chasing noise</li>
-                <li>
-                  A confidence level that routes work: clear results let a cheaper model keep iterating, borderline ones
-                  escalate
-                </li>
-                <li>Benchmarks owned by the platform, and edits to them flagged, so the metric can’t be gamed</li>
-              </ul>
-            </div>
-            <figure className="report">
-              <figcaption>Proposed verdict schema, illustrative values</figcaption>
-              <pre tabIndex={0}>
-                <code>{`{
-  "verdict": "fail",
-  "entry_points": [{
-    "service": "checkout",
-    "latency_change_ms": 6.2,
-    "band_ms": [5.9, 6.5],
-    "slo_margin_ms": -1.4
-  }],
-  "bottleneck": {
-    "service": "db-proxy",
-    "utilization": [0.40, 0.49],
-    "amplification": 3.8
-  },
-  "budget": { "per_call_ms": { "tls": 0.8 } },
-  "confidence": "validated_regime",
-  "significant": true
-}`}</code>
-              </pre>
-            </figure>
-          </div>
         </section>
 
         <section id="evidence" className="band wrap">
@@ -502,6 +528,7 @@ saturation: 139.3 rps before, 114.1 rps after (-18.1% headroom)`}</code>
         </section>
       </main>
 
+      <RevealObserver />
       <footer className="wrap">
         <div className="foot">
         <div className="brand brand-foot">
