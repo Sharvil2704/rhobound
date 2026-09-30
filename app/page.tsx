@@ -1,4 +1,6 @@
+import Link from "next/link";
 import DeliveryLoop from "@/components/DeliveryLoop";
+import Intro from "@/components/Intro";
 import Mark from "@/components/Mark";
 import RevealObserver from "@/components/RevealObserver";
 import RhoBound from "@/components/RhoBound";
@@ -53,6 +55,7 @@ const ext = { target: "_blank", rel: "noopener noreferrer" } as const;
 export default function Home() {
   return (
     <>
+      <Intro />
       <a href="#main" className="skip">
         Skip to content
       </a>
@@ -530,7 +533,7 @@ saturation: 139.3 rps before, 114.1 rps after (-18.1% headroom)`}</code>
         <p>{SIM_NOTE} Figures from third parties are linked to their source.</p>
         <p className="foot-links">
           <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>
-          <a href="/privacy">Privacy</a>
+          <Link href="/privacy">Privacy</Link>
           {site.githubUrl && (
             <a href={site.githubUrl} {...ext}>
               Research log

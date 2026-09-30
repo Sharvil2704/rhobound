@@ -1482,25 +1482,6 @@ table.data td {
   white-space: pre;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  html[data-js] .rb.reveal:not(.is-in) .rb-svg,
-  html[data-js] .rb.reveal:not(.is-in) figcaption {
-    visibility: hidden;
-  }
-  .rb.is-in .rb-axes { animation: rb-fade 0.5s 0.1s ease-out backwards; }
-  .rb.is-in .rb-curve { animation: rb-draw 1.7s 0.35s cubic-bezier(0.7, 0, 0.9, 0.6) backwards; }
-  .rb.is-in .rb-rho { animation: rb-rise 0.5s 0.6s ease-out backwards; }
-  .rb.is-in .rb-dot { animation: rb-pop 0.45s 2.05s cubic-bezier(0.3, 1.6, 0.5, 1) backwards; }
-  .rb.is-in .rb-bound-line { animation: rb-dash 0.5s 1.85s ease-out backwards; }
-  .rb.is-in .rb-bound-label { animation: rb-rise 0.4s 2.2s ease-out backwards; }
-  .rb.is-in .rb-beyond { animation: rb-fade 0.6s 2.1s ease-out backwards; }
-  .rb.is-in .rb-k1 { animation: rb-rise 0.5s 2.45s ease-out backwards; }
-  .rb.is-in .rb-k2 { animation: rb-rise 0.5s 2.7s ease-out backwards; }
-  .rb.is-in .rb-word { animation: rb-rise 0.5s 3s ease-out backwards; }
-  .rb.is-in .rb-sym { animation: rb-sym 0.5s 3.7s ease-in-out backwards; }
-  .rb.is-in .rb-txt { animation: rb-txt 0.5s 3.8s ease-in-out backwards; }
-  .rb.is-in .rb-plus { animation: rb-plus 0.5s 3.7s ease-in-out backwards; }
-}
 @keyframes rb-fade { from { opacity: 0; } }
 @keyframes rb-draw { from { stroke-dashoffset: 1; } }
 @keyframes rb-dash { from { opacity: 0; transform: translateY(-14px); } }
@@ -2032,4 +2013,105 @@ table.data td {
 }
 .not-found h1 {
   margin-top: 24px;
+}
+
+/* Opening intro: full-screen, self-dismissing */
+.opening {
+  display: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .opening {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    background: var(--bg);
+    padding: 24px;
+    animation: opening-out 0.7s 3.5s cubic-bezier(0.6, 0, 0.3, 1) forwards;
+  }
+  html[data-nointro] .opening {
+    display: none;
+  }
+  html[data-introskip] .opening {
+    animation: opening-skip 0.3s ease-out forwards;
+  }
+  .opening-inner {
+    width: min(640px, 100%);
+    animation: opening-lift 0.7s 3.5s cubic-bezier(0.6, 0, 0.3, 1) forwards;
+  }
+  .opening .rb-svg text {
+    font-size: 14px;
+  }
+  .opening .rb-svg .rb-glyph {
+    font-size: 28px;
+  }
+  .opening .rb-svg .rb-bound-label {
+    font-size: 19px;
+  }
+  .opening .rb-dot {
+    stroke: var(--bg);
+  }
+  .opening .rb-axes { animation: rb-fade 0.4s 0.05s ease-out backwards; }
+  .opening .rb-curve { animation: rb-draw 1.35s 0.2s cubic-bezier(0.7, 0, 0.9, 0.6) backwards; }
+  .opening .rb-rho { animation: rb-rise 0.45s 0.5s ease-out backwards; }
+  .opening .rb-bound { animation: rb-fade 0.3s 1.3s ease-out backwards; }
+  .opening .rb-bound-line { animation: rb-dash 0.45s 1.35s ease-out backwards; }
+  .opening .rb-bound-label { animation: rb-rise 0.4s 1.6s ease-out backwards; }
+  .opening .rb-beyond { animation: rb-fade 0.5s 1.5s ease-out backwards; }
+  .opening .rb-dot { animation: rb-pop 0.45s 1.5s cubic-bezier(0.3, 1.6, 0.5, 1) backwards; }
+  .opening-word { animation: rb-rise 0.5s 1.95s ease-out backwards; }
+  .opening-sym { animation: rb-sym 0.45s 2.6s ease-in-out backwards; }
+  .opening-txt { animation: rb-txt 0.45s 2.7s ease-in-out backwards; }
+  .opening-plus { animation: rb-plus 0.45s 2.6s ease-in-out backwards; }
+}
+.opening-word {
+  margin: 28px 0 0;
+  max-width: none;
+  text-align: center;
+  font-family: var(--display);
+  font-stretch: 118%;
+  font-weight: 700;
+  font-size: clamp(40px, 9vw, 84px);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ink);
+}
+.opening-slot {
+  display: inline-grid;
+}
+.opening-slot > span {
+  grid-area: 1 / 1;
+  color: var(--signal);
+}
+.opening-sym {
+  opacity: 0;
+  justify-self: end;
+}
+.opening-plus {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  max-width: 0;
+  opacity: 0;
+  color: var(--faint);
+  font-weight: 400;
+  white-space: pre;
+}
+@keyframes opening-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+@keyframes opening-skip {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+@keyframes opening-lift {
+  to {
+    transform: translateY(-24px) scale(0.98);
+  }
 }
