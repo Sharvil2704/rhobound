@@ -1978,3 +1978,58 @@ table.data td {
 .log-budget .log-what {
   color: #f0c261;
 }
+
+/* Privacy and 404 pages */
+.legal {
+  max-width: calc(68ch + 2 * var(--gutter));
+  padding-top: clamp(32px, 6vw, 64px);
+}
+.legal h1 {
+  font-size: clamp(34px, 5vw, 52px);
+  max-width: none;
+}
+.legal-meta {
+  margin: 12px 0 28px;
+  font-size: 14.5px;
+  color: var(--faint);
+}
+.legal .lede {
+  margin-bottom: 8px;
+}
+.legal h2 {
+  font-size: 22px;
+  margin: 44px 0 12px;
+  max-width: none;
+}
+.legal h3 {
+  font-size: 17px;
+  margin: 24px 0 6px;
+}
+.legal p,
+.legal li {
+  color: var(--muted);
+}
+.legal ul {
+  padding-left: 20px;
+  margin: 0 0 16px;
+}
+.legal li + li {
+  margin-top: 6px;
+}
+.legal code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  background: var(--sunk);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.not-found {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+}
+.not-found h1 {
+  margin-top: 24px;
+}

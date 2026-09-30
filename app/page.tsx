@@ -1,4 +1,5 @@
 import DeliveryLoop from "@/components/DeliveryLoop";
+import Mark from "@/components/Mark";
 import RevealObserver from "@/components/RevealObserver";
 import RhoBound from "@/components/RhoBound";
 import Simulator from "@/components/Simulator";
@@ -23,15 +24,6 @@ import {
 } from "@/lib/content";
 
 const SIM_NOTE = "Measured against discrete-event simulation. Production validation is in progress with design partners.";
-
-function Mark() {
-  return (
-    <svg viewBox="0 0 100 100" width="22" height="22" aria-hidden="true" className="mark">
-      <line x1="74" y1="14" x2="74" y2="86" stroke="currentColor" strokeWidth="9" strokeLinecap="round" />
-      <path d="M14 80 C40 78 62 72 68 16" fill="none" stroke="var(--signal)" strokeWidth="9" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 function Badge({ status }: { status: Status }) {
   return <span className={`badge badge-${status}`}>{STATUS_LABEL[status]}</span>;
@@ -538,6 +530,7 @@ saturation: 139.3 rps before, 114.1 rps after (-18.1% headroom)`}</code>
         <p>{SIM_NOTE} Figures from third parties are linked to their source.</p>
         <p className="foot-links">
           <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>
+          <a href="/privacy">Privacy</a>
           {site.githubUrl && (
             <a href={site.githubUrl} {...ext}>
               Research log
