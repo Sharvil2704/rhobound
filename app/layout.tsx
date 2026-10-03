@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Archivo, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
-import { site } from "@/site.config";
+import { site, team } from "@/site.config";
 import { themeScript } from "@/lib/theme";
 import "./globals.css";
 
@@ -14,19 +14,43 @@ const body = IBM_Plex_Sans({
 const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-mono", display: "swap" });
 
 const description =
-  "Rhobound predicts how a security patch to a shared container image or library changes latency across your microservices, before rollout: which services slow down, which SLOs break, and how much headroom you lose.";
+  "Rhobound is the performance gate for software change. It reads your OpenTelemetry traces, profiles the new version in your cluster, and predicts latency, SLO impact and capacity at every service before rollout.";
+
+const ldJson = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${site.url}/#org`,
+      name: site.name,
+      url: site.url,
+      email: site.contactEmail,
+      description,
+      ...(site.legalName ? { legalName: site.legalName } : {}),
+      ...(site.location ? { address: { "@type": "PostalAddress", addressLocality: site.location } } : {}),
+      ...(team.length ? { founder: team.map((m) => ({ "@type": "Person", name: m.name, jobTitle: m.role })) } : {}),
+    },
+    {
+      "@type": "SoftwareApplication",
+      name: "Rhobound",
+      applicationCategory: "DeveloperApplication",
+      description,
+      publisher: { "@id": `${site.url}/#org` },
+    },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
-  title: "Rhobound: know what a security patch costs your latency before you ship it",
+  title: "Rhobound: the performance gate for software change",
   description,
   openGraph: {
     title: "Rhobound",
-    description: "Patch fast. Know the performance cost before rollout.",
+    description: "Know what a change costs your latency before it ships.",
     type: "website",
     url: site.url,
   },
-  twitter: { card: "summary", title: "Rhobound", description: "Patch fast. Know the performance cost before rollout." },
+  twitter: { card: "summary", title: "Rhobound", description: "Know what a change costs your latency before it ships." },
 };
 
 export const viewport: Viewport = {
@@ -41,6 +65,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ldJson) }} />
       </head>
       <body>{children}</body>
     </html>

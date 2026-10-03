@@ -10,3 +10,7 @@ next-env.d.ts
 info_for_website.md
 index.html
 .claude/settings.local.json
+
+# Product code lives in a nested repo; never part of the website repo
+Rhobound-code/
+rhobound-code/

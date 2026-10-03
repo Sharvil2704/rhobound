@@ -110,80 +110,195 @@ export const options = [
   },
 ];
 
+export type Level = "Live cluster" | "Public data" | "Simulation";
+
+export const proofStrip: { level: Level | "Record"; figure: string; text: string }[] = [
+  {
+    level: "Live cluster",
+    figure: "1.1%",
+    text: "Largest error on entry-point latency after a real change to a live Kubernetes deployment, predicted from traces alone.",
+  },
+  {
+    level: "Simulation",
+    figure: "4.3%",
+    text: "Mean error on the predicted entry-point p99, across 114 fresh architectures it had never seen.",
+  },
+  {
+    level: "Record",
+    figure: "27 rounds",
+    text: "Of experiments with criteria declared before each run, 276 automated tests, and the failures published next to the successes.",
+  },
+];
+
+export const marketFacts: Fact[] = [
+  {
+    figure: "82%",
+    text: "Of container users run Kubernetes in production. Rhobound’s customers already run the platform it reads.",
+    source: "CNCF Annual Cloud Native Survey 2025",
+    href: "https://www.cncf.io/announcements/2026/01/20/kubernetes-established-as-the-de-facto-operating-system-for-ai-as-production-use-hits-82-in-2025-cncf-annual-cloud-native-survey/",
+  },
+  {
+    figure: "41%",
+    text: "Of observability teams use OpenTelemetry in production, extensively or exclusively. Its traces are all Rhobound needs.",
+    source: "Grafana Observability Survey 2025",
+    href: "https://grafana.com/observability-survey/2025/",
+  },
+];
+
+export const buyers = [
+  {
+    who: "Platform engineering and SRE",
+    why: "Own the latency objectives and the capacity bill. Rhobound tells them what a change does to both before rollout.",
+  },
+  {
+    who: "Security and vulnerability management",
+    why: "Own the patch rollout. A verdict per service lets safe fixes ship now instead of waiting for a performance review.",
+  },
+  {
+    who: "Engineering leadership",
+    why: "Carry the trade-off between security speed and reliability. They get an evidence-based answer per change.",
+  },
+];
+
+export const position = [
+  { tool: "Vulnerability scanners", answers: "Which images contain the package", rhobound: "Which services execute it, and what the fix costs" },
+  { tool: "CI: build and tests", answers: "Does it build and pass", rhobound: "Does it keep the latency objectives at real load" },
+  { tool: "Load testing", answers: "What happens under synthetic load", rhobound: "A small targeted benchmark, extended to the whole graph at real traffic" },
+  { tool: "Canary analysis", answers: "Does the new version look fine on a slice", rhobound: "What a full rollout does, including the amplification a canary cannot see" },
+  { tool: "Observability and APM", answers: "What happened after we shipped", rhobound: "What will happen, from the same telemetry" },
+  { tool: "Black-box ML predictors", answers: "A number, with no reason", rhobound: "Deterministic and explainable, and it refuses outside its validated range" },
+];
+
+export const path = [
+  {
+    title: "Design partners",
+    body: "We backtest your last patch rollouts and incidents and show what Rhobound would have predicted. Each partner adds a measured record of predicted against deployed.",
+  },
+  {
+    title: "The pipeline",
+    body: "A check in CI and a pre-rollout gate for progressive delivery, so every change gets a verdict without anyone asking for one.",
+  },
+  {
+    title: "The agents’ check",
+    body: "A tool that coding agents call inside their loop. Clear results let cheaper models keep iterating; borderline ones escalate.",
+  },
+];
+
 export const steps = [
   {
-    title: "A vulnerability lands",
-    body: "In a base image such as distroless, Debian, Ubuntu or your own, or in a library like OpenSSL, glibc or zlib.",
+    title: "Capture traces",
+    body: "A few minutes of OpenTelemetry traces from your cluster, as the Collector’s file exporter writes them. No code changes and no switches describing your system.",
   },
   {
-    title: "A fixed image is built",
-    body: "By your security team, a dependency bot or an AI coding agent, through your normal CI.",
+    title: "Infer the architecture",
+    body: "Calls and their order, parallel fan-outs, replicas and routing, and per pod the worker count and own time, rebuilt from the spans.",
   },
   {
-    title: "Old and new are benchmarked side by side",
-    body: "Only the changed code paths, on the same CPU type and core count as production, so hardware can't skew the numbers.",
+    title: "Profile the change in your cluster",
+    body: "The new image runs against the old one among live traffic, with the pod’s own CPU request and placement, so CPU-bound code meets real contention.",
   },
   {
-    title: "Your architecture is rebuilt from telemetry you already have",
-    body: "Kubernetes objects, mesh metrics, traces, eBPF, SBOMs and SLOs become one model: services, calls, fan-outs, replicas, load and which services call the changed code.",
+    title: "Predict",
+    body: "Latency change at every service, an SLO verdict, p99 before and after, lost headroom, and a certified breach when a service would pass 100% busy.",
   },
   {
-    title: "The impact is predicted in milliseconds",
-    body: "Latency change per service, an SLO verdict, lost headroom and a breach certificate. Each new candidate image is just a new benchmark, and the model re-runs instantly.",
-  },
-];
-
-export const questions: { q: string; a: string; status: Status }[] = [
-  {
-    q: "Who is actually affected?",
-    a: "SBOM lineage shows which images get the fixed base. eBPF shows which services actually call the changed library and how often. Services that ship it but never call it are separated out.",
-    status: "available",
-  },
-  {
-    q: "What does the change cost per call?",
-    a: "Old and new versions are microbenchmarked on the same hardware.",
-    status: "available",
-  },
-  {
-    q: "How does that spread through the architecture?",
-    a: "A queueing model of your service graph predicts the latency change at every service, including ones the patch never touched.",
-    status: "available",
-  },
-  {
-    q: "Do our SLOs still hold, and how much capacity do we lose?",
-    a: "An SLO verdict per service, the change in saturation point, and a hard certificate when a service would be pushed past 100%. Mean-latency SLOs today.",
-    status: "available",
-  },
-  {
-    q: "How much slowdown can we afford?",
-    a: "A latency budget, for example “this fix may add at most 0.8 ms per TLS call”, handed back to whoever builds the fix, human or agent.",
-    status: "roadmap",
+    title: "Verify",
+    body: "After the deploy, the prediction is judged against the new traces, criterion by criterion. Every report adds to the record.",
   },
 ];
 
-export const results = [
+export const deliverables: { title: string; body: string; status: Status }[] = [
+  { title: "One impact level", body: "None, low, moderate, high or critical, with one line per entry point.", status: "available" },
+  { title: "Per-service impact", body: "Mean latency before and after for every service, including ones the change never touched, with an input-noise band.", status: "available" },
+  { title: "Percentiles", body: "p50 to p99 before and after, and a planning bound: the modelled p99 after the change × 1.10.", status: "available" },
+  { title: "Capacity", body: "The load at which the busiest service saturates, before and after, and a sweep from 0.5× to 1.5× today’s load.", status: "available" },
+  { title: "Risks", body: "A certified breach, thin headroom, and own-time bursts large enough to saturate a service after the change.", status: "available" },
+  { title: "Verification", body: "After the deploy, the report against what the new traces show.", status: "available" },
+  { title: "Latency budget", body: "The most slowdown a change may add per call before an objective breaks, handed back to the fixer, human or agent.", status: "roadmap" },
+];
+
+export const principles = [
+  { title: "Deterministic and explainable", body: "Closed-form queueing mathematics, not a black box. Same inputs, same answer, and every number traces to an input." },
+  { title: "Refuses instead of guessing", body: "Contradictory data or inputs outside the validated range return a reason, not a number." },
+  { title: "Runs in your environment", body: "A command-line tool that works on your traces and your cluster. Nothing has to leave it." },
+  { title: "Milliseconds for means", body: "Mean predictions take milliseconds. Percentiles take seconds to minutes at high load." },
+];
+
+export const reportSample = `IMPACT    MODERATE
+  checkout    93.5 -> 110.1 ms  (+17.8%)  p99 207 -> 239
+  storefront  71.8 ->  78.3 ms   (+9.0%)  p99 206 -> 214
+  capacity    180 -> 156 rps (-13%), bottleneck pricing -> auth
+
+PER SERVICE      util          mean ms         change
+  payments *     44% -> 55%    23.1 -> 33.3    +10.2 ms
+  auth *         48% -> 64%    11.9 -> 18.3     +6.4 ms
+  catalog        40% -> 40%    27.1 -> 27.1     +0.0 ms
+  * changed image
+
+Headroom over today's load: 81% -> 57%
+Inferred from 686,104 spans: 10 services, 11 pods,
+2 entry points. Nothing else was given.`;
+
+export const results: { level: Level; test: string; result: string }[] = [
   {
+    level: "Live cluster",
+    test: "Entry latency after a real change, 10-service Kubernetes deployment, traces only",
+    result: "Storefront 78.28 ms predicted, 78.46 observed (−0.2%). Checkout 110.07 vs 111.32 (−1.1%). Every service within 6.6%",
+  },
+  {
+    level: "Live cluster",
+    test: "Profile of the changed image, taken in the cluster",
+    result: "Within 1.6% of the deployed change (+3.06 ms profiled, +3.01 ms deployed). The p99 planning bound held",
+  },
+  {
+    level: "Live cluster",
+    test: "Architecture inferred from traces alone",
+    result: "Replicas, routing, calls, parallel fan-out and conditional share all matched. Worker counts right on 70 of 70 service-captures",
+  },
+  {
+    level: "Live cluster",
+    test: "Online Boutique, a real open-source benchmark in five languages",
+    result: "Structure inferred and the model before the change within 0.3% to 6.4% at the endpoints",
+  },
+  {
+    level: "Public data",
+    test: "66 real fault-injection cases on Online Boutique",
+    result: "Front-end latency change within 9.1% median, at light load",
+  },
+  {
+    level: "Public data",
+    test: "A real call-center queue at high load",
+    result: "Measured wait matched within 0.94 to 1.06× from 70% utilization to saturation",
+  },
+  {
+    level: "Simulation",
     test: "Reference 12-service system, 48% to 93% utilization",
-    result: "Within ±1.8% of the simulated impact at every load",
+    result: "Entry impact within ±1.8% at every load",
   },
   {
+    level: "Simulation",
     test: "155 fresh random architectures",
-    result: "Median error 5.1%. 9 in 10 within 23%, worst 48%",
-  },
-  { test: "Architectures without re-joining fan-outs, steady traffic", result: "Median error 2–4%" },
-  { test: "Naive approach: add up the direct costs", result: "Under-estimates by a median 60–94%, every time" },
-  {
-    test: "Architecture rebuilt from raw telemetry, 10 systems up to 37 nodes",
-    result: "Structure recovered exactly in 10 of 10. The pipeline adds a median 1.0% error",
-  },
-  { test: "Global shop, 5 entry points, 75% utilization", result: "−1.9% to +9.4%. 5 of 5 SLO verdicts right" },
-  {
-    test: "Same system at 85% utilization",
-    result: "−13.4% to +9.6%. 4 of 5 SLO verdicts right, one false alarm",
+    result: "Entry error median 5.1%, worst 48%",
   },
   {
-    test: "Reachability: which services really call the changed library",
-    result: "Exact set every time. Scanner alone over-flagged 5–7 services per case",
+    level: "Simulation",
+    test: "Architectures without reconverging fan-outs",
+    result: "Median error 1.6% below 75% utilization, 3.7% from 75% to 90%",
+  },
+  {
+    level: "Simulation",
+    test: "p99 on 114 fresh cases, and the planning bound",
+    result: "Entry p99 mean error 4.3%. The ×1.10 bound held on 97% to 100% of fresh rows",
+  },
+  {
+    level: "Simulation",
+    test: "Retry-driven meltdown onset, 26 fresh cases",
+    result: "Within 5% everywhere",
+  },
+  {
+    level: "Simulation",
+    test: "Naive approach: add up the direct costs",
+    result: "Under-estimates by a median 60% to 94%, every time",
   },
 ];
 
@@ -195,27 +310,25 @@ export const amplification = [
   { rps: 106, rho: "93%", predicted: "120.7", simulated: "127.5" },
 ];
 
-export const weaker = [
-  "Bursty traffic: ignoring bursts raises median error to 22–37%. A burstiness input cuts the reference error from 19% to 5%, but over-predicts on complex fan-outs.",
-  "Heavy load (85% busy or more) with bursty traffic: median error 27%. Near saturation a 3% input error moves the answer a lot. That is queueing, not only the model.",
-  "Retries: the retry-storm warning fires about 15–20% too late.",
-  "Mean latency only. p95 and p99 prediction is on the roadmap.",
+export const boundaries = [
+  "CPU limits under bursty demand. The first thing we are closing: on Online Boutique a container limit throttled the changed service and the change was under-predicted. Next is replaying production’s arrival times in the profile and reading limits into the model.",
+  "Short own-time bursts from machine-level CPU shortage are measured and reported as a risk. The queue a burst builds is not predicted yet.",
+  "Bursty arrivals over-predict on complex fan-outs. Near saturation with bursty traffic, use a canary or simulation for go/no-go.",
+  "The change of p99 is not validated. Plan against the modelled p99 after the change × 1.10.",
 ];
 
 export const integrationGroups: { name: string; items: { name: string; role: string; status: Status }[] }[] = [
   {
-    name: "Telemetry it reads",
+    name: "What you give it",
     items: [
-      { name: "Kubernetes", role: "Services, replicas, load-balancing rules", status: "available" },
-      { name: "Istio", role: "Traffic, call counts, per-edge latency", status: "available" },
-      { name: "OpenTelemetry", role: "Traces for call order and parallelism", status: "available" },
-      { name: "Prometheus", role: "Metrics scrapes (Istio format)", status: "available" },
-      { name: "bpftrace (eBPF)", role: "Per-request service time and code-path usage", status: "available" },
-      { name: "OpenSLO", role: "Mean-latency objectives", status: "available" },
-      { name: "Google Benchmark", role: "Old vs. new cost per call", status: "available" },
-      { name: "Syft, cdxgen (CycloneDX)", role: "SBOMs and base-image lineage", status: "preview" },
-      { name: "Linkerd, Envoy, Beyla", role: "More meshes and zero-code eBPF", status: "roadmap" },
-      { name: "Parca, Pyroscope", role: "Find changed functions from profiles", status: "roadmap" },
+      { name: "OpenTelemetry traces", role: "The main input: OTLP/JSON from the Collector’s file exporter", status: "available" },
+      { name: "kubectl", role: "Deployments, services and pods, for profiling and placement", status: "available" },
+      { name: "Kubernetes and Docker", role: "Where the new image is profiled: in the cluster, or on one machine", status: "available" },
+      { name: "Istio metrics", role: "Traffic, call counts and per-edge latency", status: "available" },
+      { name: "CycloneDX SBOMs", role: "Base-image lineage; some tools need a small adapter", status: "preview" },
+      { name: "Google Benchmark, bpftrace, OpenSLO", role: "Cost per call, per-request service time, objectives", status: "available" },
+      { name: "CloudFront logs", role: "CDN edge traffic", status: "available" },
+      { name: "Linkerd, Envoy, Parca, Pyroscope", role: "More meshes and continuous profiles", status: "roadmap" },
     ],
   },
   {
@@ -231,10 +344,10 @@ export const integrationGroups: { name: string; items: { name: string; role: str
   {
     name: "Downstream: ship",
     items: [
-      { name: "GitHub Actions, GitLab CI", role: "Verdict as a check or PR comment", status: "roadmap" },
+      { name: "GitHub Actions, GitLab CI", role: "The verdict as a check or PR comment", status: "roadmap" },
       { name: "Argo Rollouts, Flagger", role: "Pre-rollout gate on the verdict", status: "roadmap" },
-      { name: "k6, wrk2, GoReplay", role: "Service-level A/B and replay", status: "roadmap" },
-      { name: "Model Context Protocol", role: "verify_change and latency_budget tools for agents", status: "roadmap" },
+      { name: "k6, wrk2, GoReplay", role: "Replay and service-level A/B", status: "roadmap" },
+      { name: "Model Context Protocol", role: "Tools coding agents call: verify a change, fetch a latency budget", status: "roadmap" },
       { name: "Sigstore, OPA, Kyverno", role: "Signed verdicts and admission policy", status: "vision" },
     ],
   },
@@ -243,63 +356,63 @@ export const integrationGroups: { name: string; items: { name: string; role: str
 export const roadmap = [
   {
     phase: "Now",
-    title: "Prototype for design partners",
+    title: "MVP with design partners",
     items: [
-      "Pass / fail / inconclusive verdicts that combine SLO margin with both uncertainty bands",
-      "Latency budget per call and per service",
-      "Onboarding without custom hooks: service time from traces or CPU usage",
-      "First real-system validation: an open-source microservices app, a real base-image fix, predicted vs. measured",
+      "The rhobound command: profile, predict, verify",
+      "CPU-limit modelling: replay production’s arrival times in the profile, read container limits into a risk rule and the model",
+      "Backtests on partners’ real rollouts, with predicted against deployed quoted",
+      "Onboarding without custom hooks",
     ],
   },
   {
     phase: "Next",
-    title: "Production coverage",
+    title: "The pipeline",
     items: [
-      "p95 / p99 prediction and percentile SLOs",
-      "Burstiness measured from real traffic",
-      "Event-driven architectures and consumer lag",
-      "Autoscaling: latency turning into replicas and cost",
+      "CI check for GitHub and GitLab, and a rollout gate for Argo Rollouts and Flagger",
+      "Latency budget per call and per service",
+      "Validated change of p99, and burstiness measured from real traffic",
+      "Event-driven consumer lag and autoscaling",
     ],
   },
   {
     phase: "Then",
-    title: "Platform",
+    title: "The platform",
     items: [
-      "CI/CD checks and a rollout gate for Argo Rollouts and Flagger",
-      "MCP server for coding agents",
+      "MCP server so coding agents call Rhobound inside their loop",
       "Versioned architecture store with every change and its measured impact",
       "Signed performance attestations next to image provenance",
+      "Admission policy: no rollout without a passing verdict",
     ],
   },
 ];
 
 export const faqs = [
   {
-    q: "Is Rhobound validated on production systems?",
-    a: "Not yet. Every result so far is against an independent discrete-event simulator of each architecture that shares none of the model's equations. Production validation with design partners is the current priority.",
+    q: "Is it validated?",
+    a: "On a live Kubernetes deployment, where entry latency after a real change was predicted from traces alone within 1.1%; on public data from real systems; and against independent simulation. A customer’s production system is the design-partner milestone, and we say so wherever a number appears.",
   },
   {
-    q: "Does it replace load testing or canaries?",
-    a: "It replaces most full-scale load testing for a change, and complements canaries. A canary measures a change's direct cost well but misses the amplification that appears only at full rollout. Rhobound predicts that part, and the canary confirms the input.",
+    q: "Does it predict p99?",
+    a: "Yes. It predicts p50 to p99 before and after each change, and gives a planning bound: the modelled p99 after the change × 1.10, which held on 97% to 100% of fresh cases. The change of p99 itself is not validated, so plan against the bound.",
   },
   {
-    q: "Is it a machine-learning model?",
-    a: "No. The core is closed-form queueing mathematics. It is deterministic and explainable, every number traces back to an input, and a prediction takes milliseconds.",
-  },
-  {
-    q: "Does it predict p99 latency?",
-    a: "Not yet. It predicts mean latency today. Percentiles are on the roadmap.",
-  },
-  {
-    q: "Do we need to change our code?",
-    a: "No. Rhobound reads Kubernetes objects, SBOMs, metrics, traces and eBPF data. The most precise service-time measurement uses an eBPF hook, and lighter fallbacks are on the roadmap.",
+    q: "What do we have to change?",
+    a: "Nothing in your code. Rhobound reads standard OpenTelemetry traces, plus kubectl output to profile the changed image.",
   },
   {
     q: "Where does our data go?",
-    a: "A self-hosted option that keeps telemetry and SBOMs inside your environment is planned. Deployment options are still being decided with design partners.",
+    a: "Rhobound is a command-line tool that runs in your environment on your traces and your cluster. Nothing has to leave it.",
   },
   {
-    q: "What architectures does it support?",
-    a: "Synchronous microservices, including parallel fan-outs, shared databases and caches, replicated services with different load-balancing policies, cache misses, CDN edges, network hops and third-party APIs. It also supports serverless functions. Event-driven (Kafka) support is on the roadmap.",
+    q: "Is it machine learning?",
+    a: "No. The core is closed-form queueing mathematics. It is deterministic and explainable, every number traces to an input, and it refuses to answer outside the range it has been validated for.",
+  },
+  {
+    q: "Does it replace load testing and canaries?",
+    a: "It replaces most full-scale load testing for a change, and complements canaries. A canary measures a change’s direct cost well but misses the amplification that appears only at full rollout. Rhobound predicts that part.",
+  },
+  {
+    q: "What does it support?",
+    a: "Synchronous request-response microservices: parallel fan-outs, shared databases and caches, replicas with different routing policies, conditional calls, CDN edges, network hops, third-party APIs, timeouts and retries. Also serverless functions. Event-driven consumer lag is on the roadmap.",
   },
 ];
