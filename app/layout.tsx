@@ -28,7 +28,7 @@ const ldJson = {
       description,
       ...(site.legalName ? { legalName: site.legalName } : {}),
       ...(site.location ? { address: { "@type": "PostalAddress", addressLocality: site.location } } : {}),
-      ...(team.length ? { founder: team.map((m) => ({ "@type": "Person", name: m.name, jobTitle: m.role })) } : {}),
+      ...(team.length ? { founder: team.map((m) => ({ "@type": "Person", name: m.name, jobTitle: m.role, ...(m.href ? { sameAs: m.href } : {}) })) } : {}),
     },
     {
       "@type": "SoftwareApplication",
