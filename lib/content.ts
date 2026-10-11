@@ -110,13 +110,54 @@ export const options = [
   },
 ];
 
-export type Level = "Live cluster" | "Public data" | "Simulation";
+export const pillars: { title: string; line: string; facts: Fact[] }[] = [
+  {
+    title: "Change is accelerating",
+    line: "Vulnerabilities are found, and fixed images built, faster every year. One rebuilt base image reaches every service at once.",
+    facts: [velocityFacts[0], velocityFacts[1]],
+  },
+  {
+    title: "Agents write the change",
+    line: "Coding agents now open pull requests on their own, and the tasks they finish keep getting longer.",
+    facts: [agentFacts[0], agentFacts[1]],
+  },
+  {
+    title: "Nobody checks what it costs",
+    line: "Tests say a change is correct. Nothing says what it does to latency at production load, so teams guess, and pad.",
+    facts: [costFacts[0], costFacts[2]],
+  },
+];
+
+export const keyResults: { level: Level; figure: string; text: string }[] = [
+  {
+    level: "Kubernetes cluster",
+    figure: "0.1%",
+    text: "Gap between the profiled change and production’s on Online Boutique, after replaying production’s own traffic in the profile.",
+  },
+  {
+    level: "Kubernetes cluster",
+    figure: "9 of 9",
+    text: "Criteria passed with only 10% to 25% of requests traced. The sampled share is found from the trace IDs.",
+  },
+  {
+    level: "Kubernetes cluster",
+    figure: "18 of 18",
+    text: "Fresh Online Boutique deploys with composed p95 within 20% of what happened.",
+  },
+  {
+    level: "Kubernetes cluster",
+    figure: "70 of 70",
+    text: "Worker-pool sizes inferred correctly from traces alone, across every service capture.",
+  },
+];
+
+export type Level = "Kubernetes cluster" | "Public data" | "Simulation";
 
 export const proofStrip: { level: Level | "Record"; figure: string; text: string }[] = [
   {
-    level: "Live cluster",
+    level: "Kubernetes cluster",
     figure: "1.1%",
-    text: "Largest error on entry-point latency after a real change to a live Kubernetes deployment, predicted from traces alone.",
+    text: "Largest entry-point error after a real change on a 10-service Kubernetes benchmark, predicted from traces alone. On Online Boutique the truth itself moves up to 13.6% between windows.",
   },
   {
     level: "Simulation",
@@ -125,8 +166,8 @@ export const proofStrip: { level: Level | "Record"; figure: string; text: string
   },
   {
     level: "Record",
-    figure: "27 rounds",
-    text: "Of experiments with criteria declared before each run, 276 automated tests, and the failures published next to the successes.",
+    figure: "115 rounds",
+    text: "Of experiments with criteria declared in advance, 396 automated tests, and the failures published next to the successes.",
   },
 ];
 
@@ -187,7 +228,7 @@ export const path = [
 export const steps = [
   {
     title: "Capture traces",
-    body: "A few minutes of OpenTelemetry traces from your cluster, as the Collector’s file exporter writes them. No code changes and no switches describing your system.",
+    body: "A few minutes of OpenTelemetry traces from your cluster: every request, or a head-sampled share, which Rhobound reads from the trace IDs. No code changes and no switches describing your system.",
   },
   {
     title: "Infer the architecture",
@@ -195,7 +236,7 @@ export const steps = [
   },
   {
     title: "Profile the change in your cluster",
-    body: "The new image runs against the old one among live traffic, with the pod’s own CPU request and placement, so CPU-bound code meets real contention.",
+    body: "The new image runs against the old one among live traffic, replaying your own arrivals with the pod’s own CPU request and placement, so CPU limits and contention show up in the profile.",
   },
   {
     title: "Predict",
@@ -203,7 +244,7 @@ export const steps = [
   },
   {
     title: "Verify",
-    body: "After the deploy, the prediction is judged against the new traces, criterion by criterion. Every report adds to the record.",
+    body: "After the deploy, the prediction is judged against the new traces, criterion by criterion. Each verified deploy calibrates the next prediction and sets its error range.",
   },
 ];
 
@@ -211,7 +252,8 @@ export const deliverables: { title: string; body: string; status: Status }[] = [
   { title: "One impact level", body: "None, low, moderate, high or critical, with one line per entry point.", status: "available" },
   { title: "Per-service impact", body: "Mean latency before and after for every service, including ones the change never touched, with an input-noise band.", status: "available" },
   { title: "Percentiles", body: "p50 to p99 before and after, and a planning bound: the modelled p99 after the change × 1.10.", status: "available" },
-  { title: "Capacity", body: "The load at which the busiest service saturates, before and after, and a sweep from 0.5× to 1.5× today’s load.", status: "available" },
+  { title: "Capacity", body: "The load at which the busiest service saturates, before and after, and a sweep from 0.5× to 1.5× today’s load. After a CPU-bound change, a range that allows for bursts.", status: "available" },
+  { title: "Error ranges", body: "A range drawn from this cluster’s own past deploys, and a running check of whether earlier ranges held. It needs a few verified deploys first.", status: "preview" },
   { title: "Risks", body: "A certified breach, thin headroom, and own-time bursts large enough to saturate a service after the change.", status: "available" },
   { title: "Verification", body: "After the deploy, the report against what the new traces show.", status: "available" },
   { title: "Latency budget", body: "The most slowdown a change may add per call before an objective breaks, handed back to the fixer, human or agent.", status: "roadmap" },
@@ -241,24 +283,44 @@ Inferred from 686,104 spans: 10 services, 11 pods,
 
 export const results: { level: Level; test: string; result: string }[] = [
   {
-    level: "Live cluster",
-    test: "Entry latency after a real change, 10-service Kubernetes deployment, traces only",
+    level: "Kubernetes cluster",
+    test: "Entry latency after a real change, 10-service benchmark, traces only",
     result: "Storefront 78.28 ms predicted, 78.46 observed (−0.2%). Checkout 110.07 vs 111.32 (−1.1%). Every service within 6.6%",
   },
   {
-    level: "Live cluster",
+    level: "Kubernetes cluster",
     test: "Profile of the changed image, taken in the cluster",
     result: "Within 1.6% of the deployed change (+3.06 ms profiled, +3.01 ms deployed). The p99 planning bound held",
   },
   {
-    level: "Live cluster",
+    level: "Kubernetes cluster",
     test: "Architecture inferred from traces alone",
     result: "Replicas, routing, calls, parallel fan-out and conditional share all matched. Worker counts right on 70 of 70 service-captures",
   },
   {
-    level: "Live cluster",
-    test: "Online Boutique, a real open-source benchmark in five languages",
-    result: "Structure inferred and the model before the change within 0.3% to 6.4% at the endpoints",
+    level: "Kubernetes cluster",
+    test: "Online Boutique, a real open-source benchmark in five languages, under CPU limits",
+    result: "Endpoints within 0.3% to 6.4% before the change. Replaying production’s arrivals put the profiled change within 0.1% of production’s and the product and cart pages within 1.1%",
+  },
+  {
+    level: "Kubernetes cluster",
+    test: "Sampled traces: 10% of requests on kshop, 25% on Online Boutique",
+    result: "The kept share found from the trace IDs. 9 of 9 criteria: entries within 4.4%, and within 0.6 to 3.3 ms of the full capture",
+  },
+  {
+    level: "Kubernetes cluster",
+    test: "Calibration by the cluster’s own past deploys, and error ranges",
+    result: "Each calibrated deploy within 10%, median 3.2% (uncalibrated 10.0%). Early: 89% and 94% of ranges held on fresh deploys, against 80% and 90% stated",
+  },
+  {
+    level: "Kubernetes cluster",
+    test: "A change that waits (a lock), and a service with two replicas sharing the load",
+    result: "Lock: every criterion 3 of 3 on fresh deploys, the catalog within 1.3%. Two replicas: browse mean within 1.9%, composed p95 within 2.8%",
+  },
+  {
+    level: "Kubernetes cluster",
+    test: "Composed p95 on Online Boutique pages, fresh deploys",
+    result: "Within 20% on 18 of 18, running 5% to 7% high. Real-cluster p99 is not claimed: the truth’s own noise floor is 46%",
   },
   {
     level: "Public data",
@@ -282,13 +344,8 @@ export const results: { level: Level; test: string; result: string }[] = [
   },
   {
     level: "Simulation",
-    test: "Architectures without reconverging fan-outs",
-    result: "Median error 1.6% below 75% utilization, 3.7% from 75% to 90%",
-  },
-  {
-    level: "Simulation",
     test: "p99 on 114 fresh cases, and the planning bound",
-    result: "Entry p99 mean error 4.3%. The ×1.10 bound held on 97% to 100% of fresh rows",
+    result: "Entry p99 mean error 4.3%. The ×1.10 bound held on 95% to 100% of fresh rows",
   },
   {
     level: "Simulation",
@@ -311,10 +368,11 @@ export const amplification = [
 ];
 
 export const boundaries = [
-  "CPU limits under bursty demand. The first thing we are closing: on Online Boutique a container limit throttled the changed service and the change was under-predicted. Next is replaying production’s arrival times in the profile and reading limits into the model.",
-  "Short own-time bursts from machine-level CPU shortage are measured and reported as a risk. The queue a burst builds is not predicted yet.",
-  "Bursty arrivals over-predict on complex fan-outs. Near saturation with bursty traffic, use a canary or simulation for go/no-go.",
-  "The change of p99 is not validated. Plan against the modelled p99 after the change × 1.10.",
+  "A change that grows response size is under-predicted by 79% to 92%, because the callers’ decoding is not measured. Rhobound detects it and states every result as a lower bound.",
+  "The first deploy on a new cluster reads low, about 0.8 times. Calibration and error ranges need a few verified deploys before they apply.",
+  "The truth is noisy. On Online Boutique, windows with nothing changed differ by up to 13.6% in the mean and 45.7% at p99, and a near-quota service varies about ±20% between deploys. Real-cluster p99 is not claimed.",
+  "Capacity after a CPU-bound change is a range, and the ceiling a CPU limit leaves is marked unvalidated in the report.",
+  "No production telemetry has been used yet. Every real-cluster result comes from benchmark applications on a Kubernetes test cluster.",
 ];
 
 export const integrationGroups: { name: string; items: { name: string; role: string; status: Status }[] }[] = [
@@ -323,6 +381,8 @@ export const integrationGroups: { name: string; items: { name: string; role: str
     items: [
       { name: "OpenTelemetry traces", role: "The main input: OTLP/JSON from the Collector’s file exporter", status: "available" },
       { name: "kubectl", role: "Deployments, services and pods, for profiling and placement", status: "available" },
+      { name: "Zipkin and B3 traces", role: "Read as calls, alongside OTLP", status: "available" },
+      { name: "Per-pod CPU counters", role: "Optional: rhobound cpu-sample reads the kubelet’s counters into the capture", status: "available" },
       { name: "Kubernetes and Docker", role: "Where the new image is profiled: in the cluster, or on one machine", status: "available" },
       { name: "Istio metrics", role: "Traffic, call counts and per-edge latency", status: "available" },
       { name: "CycloneDX SBOMs", role: "Base-image lineage; some tools need a small adapter", status: "preview" },
@@ -359,8 +419,8 @@ export const roadmap = [
     title: "MVP with design partners",
     items: [
       "The rhobound command: profile, predict, verify",
-      "CPU-limit modelling: replay production’s arrival times in the profile, read container limits into a risk rule and the model",
       "Backtests on partners’ real rollouts, with predicted against deployed quoted",
+      "A better first prediction on a new cluster, and the answer-size case: measuring what callers spend decoding a bigger response",
       "Onboarding without custom hooks",
     ],
   },
@@ -389,15 +449,15 @@ export const roadmap = [
 export const faqs = [
   {
     q: "Is it validated?",
-    a: "On a live Kubernetes deployment, where entry latency after a real change was predicted from traces alone within 1.1%; on public data from real systems; and against independent simulation. A customer’s production system is the design-partner milestone, and we say so wherever a number appears.",
+    a: "On Kubernetes benchmark applications, where entry latency after a real change was predicted from traces alone within 1.1% on a 10-service deployment and the product and cart pages of Online Boutique within 1.1%; on public data from real systems; and against independent simulation. A customer’s production system is the design-partner milestone, and we say so wherever a number appears.",
   },
   {
     q: "Does it predict p99?",
-    a: "Yes. It predicts p50 to p99 before and after each change, and gives a planning bound: the modelled p99 after the change × 1.10, which held on 97% to 100% of fresh cases. The change of p99 itself is not validated, so plan against the bound.",
+    a: "Yes. It predicts p50 to p99 before and after each change, and gives a planning bound: the modelled p99 after the change × 1.10, which held on 95% to 100% of fresh simulated cases. On real clusters we claim p95, within 20% on 18 of 18 fresh deploys. Real-cluster p99 is not claimed because the truth’s own noise floor is 46%. The change of p99 itself is not validated, so plan against the bound.",
   },
   {
     q: "What do we have to change?",
-    a: "Nothing in your code. Rhobound reads standard OpenTelemetry traces, plus kubectl output to profile the changed image.",
+    a: "Nothing in your code. Rhobound reads standard OpenTelemetry or Zipkin traces, every request or a head-sampled share, plus kubectl output to profile the changed image. Optionally it takes per-pod CPU counters and a sample request body for routes that read one.",
   },
   {
     q: "Where does our data go?",

@@ -19,6 +19,16 @@ export default function IntroControl() {
       return;
     }
     w.__rbIntroAt ??= performance.now();
+
+    // Once the overlay has finished fading out, remove it so nothing can restart it.
+    const el = document.querySelector<HTMLElement>(".opening");
+    const done = (e: AnimationEvent) => {
+      if (e.target === el && (e.animationName === "opening-out" || e.animationName === "opening-skip")) {
+        d.dataset.nointro = "1";
+      }
+    };
+    el?.addEventListener("animationend", done);
+    return () => el?.removeEventListener("animationend", done);
   }, []);
   return null;
 }

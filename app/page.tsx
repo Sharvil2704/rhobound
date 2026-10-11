@@ -9,17 +9,16 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { primaryCta, site, team } from "@/site.config";
 import {
   STATUS_LABEL,
-  agentFacts,
   amplification,
   boundaries,
   buyers,
-  costFacts,
   deliverables,
   faqs,
   integrationGroups,
+  keyResults,
   marketFacts,
-  options,
   path,
+  pillars,
   position,
   principles,
   proofStrip,
@@ -27,17 +26,18 @@ import {
   results,
   roadmap,
   steps,
-  velocityFacts,
   type Fact,
   type Status,
 } from "@/lib/content";
 
 const EVIDENCE_NOTE =
-  "Accuracy figures are measured on a live Kubernetes test deployment, on public data from real systems and against independent simulation, and each is labelled. Validation on a customer’s production system is the design-partner milestone.";
+  "Accuracy figures are measured on benchmark applications on a Kubernetes test cluster, on public data from real systems and against independent simulation, and each is labelled. Validation on a customer’s production system is the design-partner milestone.";
 
 const cliSample = `rhobound profile CAPTURE registry/auth:1.1
 rhobound predict CAPTURE CAPTURE/profiles/*
 rhobound verify  CAPTURE/rhobound/report.json AFTER`;
+
+const investorHref = `mailto:${site.contactEmail}?subject=${encodeURIComponent("Rhobound: investor conversation")}`;
 
 function Badge({ status }: { status: Status }) {
   return <span className={`badge badge-${status}`}>{STATUS_LABEL[status]}</span>;
@@ -86,7 +86,7 @@ export default function Home() {
             Proof
           </a>
           <a href="#business" className="hide-sm">
-            Business
+            Opportunity
           </a>
           <a href="#roadmap" className="hide-sm">
             Roadmap
@@ -109,9 +109,9 @@ export default function Home() {
             <h1>Know what a change costs your latency before it ships.</h1>
             <div className="hero-sub">
               <p className="lede">
-                Rhobound is the performance gate for software change: security patches, rebuilt base images, dependency
-                bumps and code written by agents. It reads your OpenTelemetry traces, profiles the new version in your
-                cluster, and predicts latency, SLO impact and capacity at every service before rollout.
+                Every change that reaches production, whether a security patch, a rebuilt image or a pull request written
+                by an agent, can slow services nobody looked at. Rhobound is the performance gate that tells you before
+                rollout: which services slow down, which SLOs break, and how much headroom you lose.
               </p>
               <div className="cta-row">
                 <a href={primaryCta.href} className="btn">
@@ -138,28 +138,23 @@ export default function Home() {
         </section>
 
         <section id="problem" className="band wrap">
-          <div className="split">
-            <div>
-              <h2>Change is accelerating. Performance review isn’t.</h2>
-              <p>
-                Most companies run dozens or hundreds of services on a handful of shared base images. One rebuilt image
-                reaches all of them at once.
-              </p>
-              <p>
-                Scanners, AI-assisted discovery and AI-written fixes keep shortening the time from “vulnerability found”
-                to “fixed image ready”. Nothing guarantees the fixed image is as fast as the old one: a slower handshake,
-                a hardened allocator, an extra bounds check on a hot path.
-              </p>
-            </div>
-            <Facts facts={velocityFacts} />
+          <h2>Software change is accelerating. Nobody checks what it costs.</h2>
+          <div className="pillars">
+            {pillars.map((p) => (
+              <div key={p.title} className="pillar">
+                <h3>{p.title}</h3>
+                <p>{p.line}</p>
+                <Facts facts={p.facts} />
+              </div>
+            ))}
           </div>
 
           <div className="amp">
             <div className="amp-text">
               <h3>A small slowdown doesn’t stay small</h3>
               <p>
-                Services queue. A slowdown at a busy service is amplified roughly by 1/(1−ρ)², where ρ is how busy it is.
-                It also slows services the change never touched, because they wait on the ones it did.
+                Services queue. A slowdown at a busy service is amplified roughly by 1/(1−ρ)², where ρ is how busy it is,
+                and it spreads to services the change never touched.
               </p>
             </div>
             <ol className="amp-scale reveal" aria-label="Amplification factor by utilization">
@@ -176,99 +171,33 @@ export default function Home() {
               ))}
             </ol>
           </div>
-
-          <h3 className="table-title">Every option available today is a bad trade</h3>
-          <div className="table-wrap">
-            <table className="data">
-              <thead>
-                <tr>
-                  <th scope="col">Option</th>
-                  <th scope="col">What goes wrong</th>
-                </tr>
-              </thead>
-              <tbody>
-                {options.map((o) => (
-                  <tr key={o.option}>
-                    <th scope="row">{o.option}</th>
-                    <td>{o.problem}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
           <p className="pull">
-            Nobody can answer “if we roll out this change, what happens to our latency and SLOs, service by service, at
-            our real traffic?” before rollout, fast enough to keep up with the pace of change.
+            When code is written at machine speed, testing and performance limits have to be checked at machine speed
+            too. DORA’s 2025 research already found that AI adoption is{" "}
+            <a href="https://redmonk.com/rstephens/2025/12/18/dora2025/" {...ext}>
+              associated with increasing delivery instability
+            </a>
+            .
           </p>
         </section>
 
-        <section id="why-now" className="band wrap">
-          <div className="split">
-            <div>
-              <h2>Agents write the change. Nothing checks what it costs.</h2>
-              <p>
-                Coding agents are moving from autocomplete to opening pull requests on their own, and the tasks they can
-                finish are getting longer every few months. Every one of those changes, security fixes included, reaches
-                production through the same shared images and the same busy services.
-              </p>
-              <p>
-                Tests tell an agent whether its code is correct. Nothing tells it what the code costs at production load,
-                and correct is not the same as fast. A human load-test cycle per change cannot keep up with machine-speed
-                changes.
-              </p>
-              <p className="pull pull-tight">
-                When code is written at machine speed, testing and performance limits have to be checked at machine speed
-                too.
-              </p>
-              <p>
-                <a href="#agents">See how Rhobound fits inside the agent loop</a>
-              </p>
-            </div>
-            <Facts facts={agentFacts} />
-          </div>
-        </section>
-
-        <section id="cost" className="band wrap">
-          <div className="split">
-            <div>
-              <h2>Guessing wrong costs twice</h2>
-              <p>
-                Once as incidents: a “harmless” change breaches an SLO in a service nobody thought was involved. And once
-                as padding: because nobody can predict what a change costs, teams provision for the worst case they can
-                imagine and never revisit it.
-              </p>
-              <p>
-                DORA’s 2025 research found that AI adoption is{" "}
-                <a href="https://redmonk.com/rstephens/2025/12/18/dora2025/" {...ext}>
-                  associated with increasing software delivery instability
-                </a>
-                . Machine-speed changes need a machine-speed check.
-              </p>
-              <p className="pull pull-tight">Overprovisioning is what a team does when it has no model.</p>
-            </div>
-            <Facts facts={costFacts} />
-          </div>
-        </section>
-
         <section id="agents" className="band wrap">
-          <h2>The delivery loop agents need: fast, with a hard limit in it</h2>
+          <h2>The gate every change passes through</h2>
           <div className="loop-intro">
             <p className="intro">
-              In an agentic workflow, the agent writes the change, opens the pull request and waits for checks. Tests
-              catch wrong code. Rhobound is the check that catches slow code: it predicts what the change does to latency
-              at your peak traffic, so it fits inside the loop instead of after it.
+              In an agentic workflow the agent writes the change, opens the pull request and waits for checks. Tests catch
+              wrong code. Rhobound catches slow code, at your peak traffic, before it merges.
             </p>
             <ul className="loop-why">
               <li>
-                <b>Volume.</b> Agents open changes around the clock. A human performance review per change does not scale.
+                <b>Scale.</b> Agents open changes around the clock. A human performance review per change does not scale.
               </li>
               <li>
-                <b>Correct is not fast.</b> Tests go green on code that slows a busy service, and queueing multiplies that
-                slowdown only at production load.
+                <b>Correct is not fast.</b> Tests go green on code that slows a busy service.
               </li>
               <li>
-                <b>A limit, not an opinion.</b> The agent gets a verdict with an error band, and a certified breach when a
-                change pushes a service past saturation. That last one is arithmetic, not a forecast.
+                <b>A limit, not an opinion.</b> A verdict with an error band, and a certified breach when a change pushes
+                a service past saturation. That last one is arithmetic, not a forecast.
               </li>
             </ul>
           </div>
@@ -281,10 +210,10 @@ export default function Home() {
         </section>
 
         <section id="product" className="band wrap">
-          <h2>From traces to a verdict in five steps</h2>
+          <h2>The performance gate, from traces to a verdict</h2>
           <p className="intro">
-            Rhobound sits between “the change builds” and “the change is rolled out”. It needs a few minutes of
-            OpenTelemetry traces and no changes to your code.
+            It sits between “the change builds” and “the change is rolled out”, needs a few minutes of OpenTelemetry
+            traces, and asks for no changes to your code.
           </p>
           <ol className="steps reveal">
             {steps.map((s) => (
@@ -294,24 +223,10 @@ export default function Home() {
               </li>
             ))}
           </ol>
-          <div className="outcomes">
-            <div className="outcome is-ok">
-              <strong>Safe</strong>
-              <span>Roll out now, with evidence.</span>
-            </div>
-            <div className="outcome is-bad">
-              <strong>Breaks an SLO</strong>
-              <span>Hold it, add capacity, or send it back to whoever builds the fix.</span>
-            </div>
-            <div className="outcome">
-              <strong>Low-severity CVE, high cost</strong>
-              <span>Defer or mitigate, backed by evidence.</span>
-            </div>
-          </div>
 
           <div className="product">
             <div>
-              <h3 className="table-title tight">What you get</h3>
+              <h3 className="table-title tight">What every change gets</h3>
               <ul className="questions">
                 {deliverables.map((d) => (
                   <li key={d.title}>
@@ -332,7 +247,7 @@ export default function Home() {
                 </pre>
               </figure>
               <figure className="report">
-                <figcaption>Excerpt of a real report, condensed. A live 10-service Kubernetes deployment</figcaption>
+                <figcaption>Excerpt of a real report, condensed. A 10-service Kubernetes benchmark</figcaption>
                 <pre tabIndex={0}>
                   <code>{reportSample}</code>
                 </pre>
@@ -383,44 +298,59 @@ export default function Home() {
               </li>
             </ol>
           </div>
-          <p className="pipeline-note">
-            The scanner says a service is vulnerable. CI says the change builds. Rhobound says whether it is safe to roll
-            out. Observability feeds its traces back into the model.
-          </p>
         </section>
 
         <section id="proof" className="band wrap">
-          <h2>Proof</h2>
+          <h2>Built to be audited</h2>
           <p className="intro">
-            Rhobound is tested the way a safety system should be: criteria declared before each run, fresh cases it has
-            never seen, and failures published next to the successes. Every number says what it was measured on.
+            Criteria are declared before each run, tested on fresh cases, and the failures are published next to the
+            successes. Every number says what it was measured on.
           </p>
 
-          <div className="table-wrap">
-            <table className="data proof-table">
-              <caption>Headline results</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Measured on</th>
-                  <th scope="col">What was tested</th>
-                  <th scope="col">Result</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.map((r) => (
-                  <tr key={r.test}>
-                    <td>
-                      <span className={`lvl lvl-${r.level.split(" ")[0].toLowerCase()}`}>{r.level}</span>
-                    </td>
-                    <th scope="row">{r.test}</th>
-                    <td>{r.result}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ul className="proof-strip proof-4">
+            {keyResults.map((p) => (
+              <li key={p.figure}>
+                <span className="lvl lvl-kubernetes">{p.level}</span>
+                <strong>{p.figure}</strong>
+                <span>{p.text}</span>
+              </li>
+            ))}
+          </ul>
 
-          <div className="split proof-lower">
+          <aside className="weaker proof-bounds" aria-labelledby="weaker-h">
+            <h3 id="weaker-h">Boundaries we publish</h3>
+            <ul>
+              {boundaries.map((w) => (
+                <li key={w}>{w}</li>
+              ))}
+            </ul>
+          </aside>
+
+          <details className="more">
+            <summary>See every result, by what it was measured on</summary>
+            <div className="table-wrap">
+              <table className="data proof-table">
+                <caption>Headline results</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Measured on</th>
+                    <th scope="col">What was tested</th>
+                    <th scope="col">Result</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.map((r) => (
+                    <tr key={r.test}>
+                      <td>
+                        <span className={`lvl lvl-${r.level.split(" ")[0].toLowerCase()}`}>{r.level}</span>
+                      </td>
+                      <th scope="row">{r.test}</th>
+                      <td>{r.result}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <div className="table-wrap">
               <table className="data num-table">
                 <caption>Simulation: the same change at different loads. Added latency at the entry point, ms</caption>
@@ -446,24 +376,18 @@ export default function Home() {
                 </tbody>
               </table>
             </div>
-            <aside className="weaker" aria-labelledby="weaker-h">
-              <h3 id="weaker-h">Boundaries we publish</h3>
-              <ul>
-                {boundaries.map((w) => (
-                  <li key={w}>{w}</li>
-                ))}
-              </ul>
-            </aside>
-          </div>
+          </details>
           <p className="credibility">
-            276 automated tests lock the validated results. Every model change is promoted only if it improves a reference
-            system and a sweep of random architectures without moving a control architecture, and the criteria are
-            declared and recorded before the run. {EVIDENCE_NOTE}
+            396 automated tests lock the validated results. {EVIDENCE_NOTE}
           </p>
         </section>
 
         <section id="business" className="band wrap">
-          <h2>Who buys it, and how it grows</h2>
+          <h2>A missing gate in every delivery pipeline</h2>
+          <p className="intro">
+            Tests and security scans are standard gates in the pipeline. Performance is the missing one, and agents
+            writing code at machine speed make it urgent. Rhobound is built to be that gate.
+          </p>
           <div className="split">
             <ul className="questions">
               {buyers.map((b) => (
@@ -476,7 +400,7 @@ export default function Home() {
             <Facts facts={marketFacts} />
           </div>
 
-          <h3 className="table-title">Where it sits</h3>
+          <h3 className="table-title">Why today’s tools don’t close it</h3>
           <div className="table-wrap">
             <table className="data">
               <thead>
@@ -498,7 +422,7 @@ export default function Home() {
             </table>
           </div>
 
-          <h3 className="table-title">How it grows</h3>
+          <h3 className="table-title">How we grow</h3>
           <ol className="steps steps-3 reveal">
             {path.map((s) => (
               <li key={s.title}>
@@ -512,36 +436,13 @@ export default function Home() {
           <ul className="ticks ticks-wide">
             <li>A validated, auditable model with a published error record for each kind of architecture.</li>
             <li>An inference engine that rebuilds an architecture from traces alone.</li>
-            <li>In-cluster profiling that sees real contention, which an idle benchmark misses.</li>
-            <li>A record of predicted against deployed, which every verified change and every design partner adds to.</li>
+            <li>In-cluster profiling that replays your own traffic, which sees the contention and CPU limits an idle benchmark misses.</li>
+            <li>A per-cluster history: every verified deploy calibrates the next prediction and sets its error range, and every design partner adds to the record.</li>
           </ul>
         </section>
 
-        <section id="integrations" className="band wrap">
-          <h2>Reads the standards you already run</h2>
-          <p className="intro">Status refers to Rhobound’s integration, not to the project itself.</p>
-          <div className="integrations">
-            {integrationGroups.map((g) => (
-              <div key={g.name} className="int-group">
-                <h3>{g.name}</h3>
-                <ul>
-                  {g.items.map((it) => (
-                    <li key={it.name}>
-                      <div>
-                        <b>{it.name}</b>
-                        <span>{it.role}</span>
-                      </div>
-                      <Badge status={it.status} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </section>
-
         <section id="roadmap" className="band wrap">
-          <h2>Roadmap</h2>
+          <h2>Where this goes</h2>
           <ol className="roadmap">
             {roadmap.map((r) => (
               <li key={r.phase}>
@@ -555,6 +456,28 @@ export default function Home() {
               </li>
             ))}
           </ol>
+          <details className="more">
+            <summary>Integrations and their status</summary>
+            <div className="integrations">
+              {integrationGroups.map((g) => (
+                <div key={g.name} className="int-group">
+                  <h3>{g.name}</h3>
+                  <ul>
+                    {g.items.map((it) => (
+                      <li key={it.name}>
+                        <div>
+                          <b>{it.name}</b>
+                          <span>{it.role}</span>
+                        </div>
+                        <Badge status={it.status} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+            <p className="intro-note">Status refers to Rhobound’s integration, not to the project itself.</p>
+          </details>
         </section>
 
         {team.length > 0 && (
@@ -592,7 +515,7 @@ export default function Home() {
         <section id="partner" className="band wrap">
           <div className="partner">
             <div>
-              <h2>Backtest your last rollouts with us</h2>
+              <h2>Become a design partner</h2>
               <p>
                 We’ll backtest your last few patch rollouts and incidents and show what Rhobound would have predicted.
                 We’re looking for teams running containerized microservices on Kubernetes, with shared base images and
@@ -603,8 +526,8 @@ export default function Home() {
               <a href={primaryCta.href} className="btn">
                 {primaryCta.label}
               </a>
-              <a href={`mailto:${site.contactEmail}`} className="plain-link">
-                {site.contactEmail}
+              <a href={investorHref} className="plain-link">
+                For investors: start a conversation
               </a>
             </div>
           </div>
