@@ -4,7 +4,8 @@ export const site = {
   url: "https://www.rhobound.com",
   contactEmail: "sam@rhobound.com",
   bookCallUrl: "", // e.g. a Cal.com or Calendly link
-  githubUrl: "", // only once the repository is public
+  githubUrl: "", // the company or research repository, only once it is public
+  cliRepoUrl: "https://github.com/Sharvil2704/rhobound-cli", // the open-source command-line tool (Apache-2.0)
   demoVideoUrl: "",
   legalName: "", // e.g. "Rhobound Inc."
   location: "", // e.g. "San Francisco, CA"

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import DeliveryLoop from "@/components/DeliveryLoop";
+import GithubIcon from "@/components/GithubIcon";
 import Intro from "@/components/Intro";
 import Mark from "@/components/Mark";
 import RevealObserver from "@/components/RevealObserver";
@@ -36,6 +37,10 @@ const EVIDENCE_NOTE =
 const cliSample = `rhobound profile CAPTURE registry/auth:1.1
 rhobound predict CAPTURE CAPTURE/profiles/*
 rhobound verify  CAPTURE/rhobound/report.json AFTER`;
+
+const ossSample = `go install github.com/Sharvil2704/rhobound-cli/cmd/rhobound@latest
+
+rhobound predict ./capture --patch checkout=+3ms`;
 
 const investorHref = `mailto:${site.contactEmail}?subject=${encodeURIComponent("Rhobound: investor conversation")}`;
 
@@ -96,6 +101,12 @@ export default function Home() {
               Team
             </a>
           )}
+          <Link href="/cli" className="hide-sm">
+            Open source
+          </Link>
+          <a href={site.cliRepoUrl} className="icon-link" aria-label="rhobound-cli on GitHub" {...ext}>
+            <GithubIcon />
+          </a>
           <ThemeToggle />
           <a href={primaryCta.href} className="btn btn-small">
             Talk to us
@@ -382,6 +393,34 @@ export default function Home() {
           </p>
         </section>
 
+        <section id="open-source" className="band wrap">
+          <div className="oss">
+            <div>
+              <h2>Open source: rhobound-cli</h2>
+              <p>
+                Our open-source command-line tool. It reads OpenTelemetry traces, infers your service graph and predicts
+                mean latency before and after a change, using the queueing-theory approach behind Rhobound. One static Go
+                binary, Apache-2.0.
+              </p>
+              <div className="cta-row">
+                <a href={site.cliRepoUrl} className="btn gh-btn" {...ext}>
+                  <GithubIcon size={18} />
+                  View on GitHub
+                </a>
+                <Link href="/cli" className="btn btn-ghost">
+                  Learn more
+                </Link>
+              </div>
+            </div>
+            <figure className="report wrap-lines">
+              <figcaption>rhobound-cli, from the public repository</figcaption>
+              <pre tabIndex={0}>
+                <code>{ossSample}</code>
+              </pre>
+            </figure>
+          </div>
+        </section>
+
         <section id="business" className="band wrap">
           <h2>A missing gate in every delivery pipeline</h2>
           <p className="intro">
@@ -545,6 +584,11 @@ export default function Home() {
           <p className="foot-links">
             <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>
             <Link href="/privacy">Privacy</Link>
+            <Link href="/cli">rhobound-cli</Link>
+            <a href={site.cliRepoUrl} className="foot-gh" aria-label="rhobound-cli on GitHub" {...ext}>
+              <GithubIcon size={16} />
+              GitHub
+            </a>
             {site.githubUrl && (
               <a href={site.githubUrl} {...ext}>
                 Research log
