@@ -166,7 +166,7 @@ export default function Simulator() {
                     <span className="bar-track">
                       <span
                         className="bar-fill"
-                        style={{ width: d === null ? "100%" : `${((shown[k] / peak) * 100).toFixed(1)}%` }}
+                        style={{ transform: `scaleX(${d === null ? 1 : Math.max(0, shown[k] / peak).toFixed(3)})` }}
                       />
                     </span>
                   </td>

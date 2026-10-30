@@ -525,14 +525,18 @@ export default function Home() {
             <ul className="team">
               {team.map((m) => (
                 <li key={m.name}>
-                  <h3>{m.name}</h3>
-                  <p className="team-role">{m.role}</p>
-                  <p>{m.bio}</p>
-                  {m.href && (
-                    <a href={m.href} {...ext}>
-                      Profile
-                    </a>
-                  )}
+                  <div>
+                    <h3>{m.name}</h3>
+                    <p className="team-role">{m.role}</p>
+                  </div>
+                  <div>
+                    <p>{m.bio}</p>
+                    {m.href && (
+                      <a href={m.href} {...ext}>
+                        Profile
+                      </a>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
